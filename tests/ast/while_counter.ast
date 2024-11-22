@@ -1,0 +1,59 @@
+(Program
+  (FnDef
+    [Fn]
+    [Ident f]
+    (FnParamList
+      [LParen]
+      (FnParam
+        [Ident x]
+        [Colon]
+        (BaseTypeExpr [I32])
+      )
+      [RParen]
+    )
+    [Arrow]
+    (BaseTypeExpr [I32])
+    (Block
+      [LCurly]
+      (VarStmt
+        [Var]
+        (VarDef [Ident i])
+        [Equal]
+        (LiteralExpr [Decimal 0])
+        [Semi]
+      )
+      (ExprStmt
+        (WhileExpr
+          [While]
+          (BinaryExpr
+            (VarExpr [Ident i])
+            [Less]
+            (VarExpr [Ident x])
+          )
+          (Block
+            [LCurly]
+            (ExprStmt
+              (AssignExpr
+                (VarExpr [Ident i])
+                [Equal]
+                (BinaryExpr
+                  (VarExpr [Ident i])
+                  [Plus]
+                  (LiteralExpr [Decimal 1])
+                )
+              )
+              [Semi]
+            )
+            [RCurly]
+          )
+        )
+      )
+      (ReturnStmt
+        [Return]
+        (VarExpr [Ident i])
+        [Semi]
+      )
+      [RCurly]
+    )
+  )
+)

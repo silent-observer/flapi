@@ -1,0 +1,159 @@
+Program = Definition*
+
+Definition =
+   FnDef
+ | StructDef
+ | EnumDef
+
+FnDef = 'fn' 'IDENT' FnParamList ('->' TypeExpr)? FnModifierList? Block
+FnParamList = '(' FnParam* ')'
+FnParam = 'IDENT' ':' 'mut'? TypeExpr ','?
+FnModifierList = FnModifier+
+FnModifier = GivenModifier | WithModifier
+GivenModifier = 'given' '(' ImplicitClause+ ')'
+WithModifier = 'with' '(' ImplicitClause+ ')'
+ImplicitClause = ('IDENT' ':')? TypeExpr ','?
+
+Block = '{' Statement+ '}'
+Statement = 
+   ExprStmt
+ | LetStmt
+ | VarStmt
+ | WithStmt
+ | ReturnStmt
+ | BreakStmt
+ | ContinueStmt
+
+ExprStmt =
+   BlocklessExpr ';'
+ | BlockExpr
+LetStmt = 'let' VarDef '=' Expr ';'
+VarStmt = 'var' VarDef '=' Expr ';'
+WithStmt = 'with' VarDef = Expr ';'
+VarDef = 'IDENT' (':' TypeExpr)?
+ReturnStmt = 'return' Expr? ';'
+BreakStmt = 'break' Expr? ';'
+ContinueStmt = 'continue' ';'
+
+TypeExpr = 
+   BaseTypeExpr
+ | GenericParamName
+ | CustomTypeExpr
+ | FunctionTypeExpr
+ | TupleTypeExpr
+BaseTypeExpr =
+   'i8'
+ | 'i16'
+ | 'i32'
+ | 'i64'
+ | 'u8'
+ | 'u16'
+ | 'u32'
+ | 'u64'
+ | 'str'
+ | 'char'
+ | 'bool'
+
+GenericParamName = '%' 'IDENT'
+CustomTypeExpr = 'IDENT' GenericArgList?
+GenericArgList = '[' GenericArg+ ']'
+GenericArg = (GenericParamName '=')? TypeExpr ','?
+
+FunctionTypeExpr = FunctionSpec GenericArgList? ('->' TypeExpr)? FnModifierList?
+FunctionSpec = 'fn' ('{' '1' ('+' | '?')? '}')?
+
+TupleTypeExpr = '(' TupleArg* ')'
+TypeArg = TypeExpr ','?
+
+Expr = BlocklessExpr | BlockExpr
+BlocklessExpr = SimpleExpr AssignPostfix?
+AssignPostfix = AssignOp Expr
+AssignOp = '=' | '+=' | '-=' | '*=' | '/=';
+BlockExpr =
+   IfExpr
+ | WhileExpr
+ | LoopExpr
+ | ForExpr
+
+IfExpr = IfClause ElseIfClause* ElseClause?
+IfClause = 'if' SimpleExpr Block
+ElseIfClause = 'else' 'if' SimpleExpr Block
+ElseClause = 'else' Block
+
+WhileExpr = 'while' SimpleExpr Block
+LoopExpr = 'loop' Block
+ForExpr = 'for' VarDef 'in' SimpleExpr Block
+
+SimpleExpr = <Pratt Parser> (UnaryExpr)
+    L\R| * / % + - | > >= < <= == != | and or | |>
+    ---|-----------|-----------------|--------|----
+    *  | L L L L L | L L  L L  L  L  |  L  L  | L
+    /  | ? L L L L | L L  L L  L  L  |  L  L  | L
+    %  | ? ? L L L | L L  L L  L  L  |  L  L  | L
+    +  | R R R L L | L L  L L  L  L  |  L  L  | L
+    -  | R R R L L | L L  L L  L  L  |  L  L  | L
+    ---|-----------|-----------------|--------|----
+    >  | R R R R R | ? ?  ? ?  ?  ?  |  L  L  | L
+    >= | R R R R R | ? ?  ? ?  ?  ?  |  L  L  | L
+    <  | R R R R R | ? ?  ? ?  ?  ?  |  L  L  | L
+    <= | R R R R R | ? ?  ? ?  ?  ?  |  L  L  | L
+    == | R R R R R | ? ?  ? ?  ?  ?  |  L  L  | L
+    != | R R R R R | ? ?  ? ?  ?  ?  |  L  L  | L
+    ---|-----------|-----------------|--------|----
+    and| R R R R R | R R  R R  R  R  |  L  L  | L
+    or | R R R R R | R R  R R  R  R  |  R  L  | L
+    ---|-----------|-----------------|--------|----
+    |> | R R R R R | R R  R R  R  R  |  R  R  | L
+PostfixOp =
+   DotOp
+ | CallOp
+ | IndexOp
+
+UnaryExpr =
+   PostfixExpr
+ | UnaryOp PostfixExpr
+UnaryOp = '+' | '-' | 'not'
+
+
+
+DotOp = '.' 'IDENT'
+CallOp = 
+   ArgList LambdaExpr?
+ | LambdaExpr
+ArgList = '(' Arg* ')'
+Arg = Expr ','?
+LambdaExpr = LambdaParamList Block
+LambdaParamList = '|' LambdaParam* '|'
+LambdaParam = 'IDENT' (':' 'var'? Type)?
+IndexOp = '[' Expr ']'
+
+
+DelimetedExpr =
+   LiteralExpr
+ | VarExpr
+ | LambdaExpr
+ | ParenExpr
+
+LiteralExpr =
+   'DECIMAL'
+ | 'BINARY'
+ | 'STRING'
+ | 'CHAR'
+ | 'true'
+ | 'false'
+VarExpr = 'IDENT'
+ParenExpr  = '(' Expr ')'
+
+StructDef = 'struct' CustomTypeExpr StructEntryList
+StructEntryList = '{' StructEntry* '}'
+StructEntry = 'IDENT' ':' Type ','?
+
+EnumDef = 'enum' CustomTypeExpr EnumEntryList
+EnumEntryList = '{' EnumEntry* '}'
+EnumEntry = 
+   EnumEntrySimple
+ | EnumEntryTuple
+ | EnumEntryStruct
+EnumEntrySimple = 'IDENT'
+EnumEntryTuple = 'IDENT' TupleTypeExpr
+EnumEntryStruct = 'IDENT' StructEntryList

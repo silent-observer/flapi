@@ -1,0 +1,91 @@
+(Program
+  (FnDef
+    [Fn]
+    [Ident fib]
+    (FnParamList
+      [LParen]
+      (FnParam
+        [Ident x]
+        [Colon]
+        (BaseTypeExpr [I32])
+      )
+      [RParen]
+    )
+    [Arrow]
+    (BaseTypeExpr [I32])
+    (Block
+      [LCurly]
+      (ExprStmt
+        (IfExpr
+          (IfClause
+            [If]
+            (BinaryExpr
+              (VarExpr [Ident x])
+              [LessOrEqual]
+              (LiteralExpr [Decimal 1])
+            )
+            (Block
+              [LCurly]
+              (ReturnStmt
+                [Return]
+                (LiteralExpr [Decimal 1])
+                [Semi]
+              )
+              [RCurly]
+            )
+          )
+        )
+      )
+      (LetStmt
+        [Let]
+        (VarDef [Ident f1])
+        [Equal]
+        (CallExpr
+          (VarExpr [Ident fib])
+          (ArgList
+            [LParen]
+            (Arg
+              (BinaryExpr
+                (VarExpr [Ident x])
+                [Minus]
+                (LiteralExpr [Decimal 1])
+              )
+            )
+            [RParen]
+          )
+        )
+        [Semi]
+      )
+      (LetStmt
+        [Let]
+        (VarDef [Ident f2])
+        [Equal]
+        (CallExpr
+          (VarExpr [Ident fib])
+          (ArgList
+            [LParen]
+            (Arg
+              (BinaryExpr
+                (VarExpr [Ident x])
+                [Minus]
+                (LiteralExpr [Decimal 2])
+              )
+            )
+            [RParen]
+          )
+        )
+        [Semi]
+      )
+      (ReturnStmt
+        [Return]
+        (BinaryExpr
+          (VarExpr [Ident f1])
+          [Plus]
+          (VarExpr [Ident f2])
+        )
+        [Semi]
+      )
+      [RCurly]
+    )
+  )
+)

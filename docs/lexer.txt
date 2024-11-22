@@ -1,0 +1,21 @@
+IDENT := [A-Za-z_][A-Za-z_0-9]*
+DECIMAL := [0-9_]+
+HEX := 0x[0-9A-Fa-f_]+
+BINARY := 0b[01_]+
+STRING := "([^"]|\['"nt])*"
+CHAR := '([^']|)\['"nt]'
+
+SYMBOLS:
+    = == > < >= <= !=
+    + - * /
+    += -= *= /=
+    : . % ; | , ?
+    -> |>
+    ( ) [ ] { }
+
+KEYWORDS:
+    fn if else for in while loop break continue var let return
+    and or not
+    given handled interface exec with forward
+    true false
+    i8 i16 i32 i64 u8 u16 u32 u64 str char bool

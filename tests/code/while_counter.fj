@@ -1,0 +1,7 @@
+fn f(x: i32) -> i32 {
+    var i = 0;
+    while i < x {
+        i = i + 1;
+    }
+    return i;
+}
