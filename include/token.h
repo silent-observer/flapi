@@ -3,6 +3,7 @@
 
 #include "memcxt.h"
 
+#include "sourcespan.h"
 #include "types.h"
 #include <stc/csview.h>
 #include <stc/czview.h>
@@ -106,8 +107,7 @@ static const czview TOKEN_KIND_STRS[TOKEN_KIND_COUNT] = {
 typedef struct {
     csview text;
     TokenKind kind;
-    i32 line;
-    i32 col;
+    SourcePoint src;
 } Token;
 
 #define i_TYPE TokenVec, Token

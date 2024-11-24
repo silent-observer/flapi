@@ -143,8 +143,8 @@ static Token *parseToken(CstParser *p) {
     *token = (Token){
         .text = text,
         .kind = kind,
-        .line = 0,
-        .col = 0,
+        .src.line = 0,
+        .src.col = 0,
     };
 
     skipWhiteSpace(p);

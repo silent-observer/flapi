@@ -53,8 +53,8 @@ static Token nextToken(Lexer *lexer) {
         break;
     }
 
-    token.line = lexer->line;
-    token.col = lexer->col;
+    token.src.line = lexer->line;
+    token.src.col = lexer->col;
 
     // Special tokens
     u32 c = utf8_peek(lexer->it.ref);
@@ -179,8 +179,8 @@ static Token lexWord(Lexer *lexer) {
     Token token;
     token.text = csview_from_n(lexer->it.ref, i.ref - lexer->it.ref);
     token.kind = findKeyword(&token.text);
-    token.line = lexer->line;
-    token.col = lexer->col;
+    token.src.line = lexer->line;
+    token.src.col = lexer->col;
     lexer->it = i;
     lexer->col = col;
     return token;
@@ -219,8 +219,8 @@ static Token lexNumber(Lexer *lexer) {
     token.text = csview_from_n(lexer->it.ref, i.ref - lexer->it.ref);
     token.kind = is_hex ? TOKEN_HEX : is_bin ? TOKEN_BINARY
                                              : TOKEN_DECIMAL;
-    token.line = lexer->line;
-    token.col = lexer->col;
+    token.src.line = lexer->line;
+    token.src.col = lexer->col;
     lexer->it = i;
     lexer->col = col;
     return token;
@@ -231,8 +231,8 @@ static Token lexString(Lexer *lexer) {
     assert(cur_char() == '"');
 
     Token token;
-    token.line = lexer->line;
-    token.col = lexer->col;
+    token.src.line = lexer->line;
+    token.src.col = lexer->col;
 
     i32 lines = 0;
     i32 col = lexer->col + 1;
@@ -253,7 +253,7 @@ static Token lexString(Lexer *lexer) {
             } else {
                 token.kind = TOKEN_ERROR;
                 token.text = c_sv("Invalid escape sequence");
-                token.col = col;
+                token.src.col = col;
                 return token;
             }
         } else if (c == '\n') {
@@ -277,8 +277,8 @@ static Token lexChar(Lexer *lexer) {
     assert(char_at(0) == '\'');
 
     Token token;
-    token.line = lexer->line;
-    token.col = lexer->col;
+    token.src.line = lexer->line;
+    token.src.col = lexer->col;
 
     if (char_at(1) == '\\') {
         char c2 = char_at(2);

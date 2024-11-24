@@ -46,7 +46,7 @@ static inline cstr printParserError(const ParserError *error) {
         case PARSER_ERROR_EXPECTED:
             cstr_printf(&str,
                         "Syntax error at (%d:%d): Expected '%s' but got '%.*s' which is '%s'\n",
-                        error->got->line, error->got->col,
+                        error->got->src.line, error->got->src.col,
                         TOKEN_KIND_NAMES[error->expected].str,
                         c_SV(error->got->text),
                         TOKEN_KIND_NAMES[error->got->kind].str);
@@ -54,13 +54,13 @@ static inline cstr printParserError(const ParserError *error) {
         case PARSER_ERROR_MSG:
             cstr_printf(&str,
                         "Syntax error at (%d:%d): %s\n",
-                        error->got->line, error->got->col,
+                        error->got->src.line, error->got->src.col,
                         error->msg);
             break;
         case PARSER_ERROR_PRECEDENCE_AMBIGUOUS:
             cstr_printf(&str,
                         "Syntax error at (%d:%d): Precedence between operators '%s' and '%s' is ambiguous, please use parentheses\n",
-                        error->got->line, error->got->col,
+                        error->got->src.line, error->got->src.col,
                         TOKEN_KIND_STRS[error->left_token].str,
                         TOKEN_KIND_STRS[error->right_token].str);
             break;

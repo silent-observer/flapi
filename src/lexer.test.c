@@ -40,8 +40,8 @@ int lexer_test() {
         Token token = tokens.data[i];
         test_assert_defer(token.kind == TOKENS[i].kind);
         test_assert_defer(csview_eq(&token.text, &TOKENS[i].text));
-        test_assert_defer(token.line == TOKENS[i].line);
-        test_assert_defer(token.col == TOKENS[i].col);
+        test_assert_defer(token.src.line == TOKENS[i].src.line);
+        test_assert_defer(token.src.col == TOKENS[i].src.col);
     }
     test_assert_defer(TokenVec_back(&tokens)->kind == TOKEN_EOF);
 
