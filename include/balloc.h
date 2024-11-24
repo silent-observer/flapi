@@ -2,7 +2,7 @@
 #define BALLOC_H
 
 #include "types.h"
-#include <stc/common.h>
+#include <assert.h>
 #include <string.h>
 
 #define MIN_BITS 4
@@ -61,10 +61,15 @@ static inline void *bcalloc(BAllocator *allocator, u32 size, u32 count) {
 static inline void *brealloc(void *ptr, u32 size) {
     assert(ptr);
     BAllocator *allocator = bfind(ptr);
-    void *newPtr = balloc(allocator, size);
-    c_memcpy(newPtr, ptr, size);
-    bfree(ptr);
-    return newPtr;
+    if (size > 0) {
+        void *newPtr = balloc(allocator, size);
+        memcpy(newPtr, ptr, size);
+        bfree(ptr);
+        return newPtr;
+    } else {
+        bfree(ptr);
+        return NULL;
+    }
 }
 
 #endif
