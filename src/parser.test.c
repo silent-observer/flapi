@@ -1,5 +1,5 @@
 #include "parser.h"
-#include "ast.h"
+#include "cst.h"
 #include "fs.h"
 #include "lexer.h"
 #include "test.h"
@@ -22,27 +22,27 @@ int parser_test(void) {
         cstr code = readTextFile(filename);
         test_assert_defer(!cstr_empty(&code));
 
-        sprintf(filename, TEST_DIR "/ast/%s.ast", name);
+        sprintf(filename, TEST_DIR "/cst/%s.cst", name);
         cstr expected = readTextFile(filename);
 
         TokenVec tokens = lex(cstr_zv(&code));
         ParseResult parseResult = parse(tokens.data, TokenVec_size(&tokens));
 
-        cstr astDump = printSExprAst(parseResult.ast.root);
+        cstr cstDump = printSExprCst(parseResult.cst.root);
         if (ParserErrorVec_size(&parseResult.errors) > 0) {
-            cstr_append(&astDump, "\n\n------ ERRORS ------\n");
+            cstr_append(&cstDump, "\n\n------ ERRORS ------\n");
             c_foreach(it, ParserErrorVec, parseResult.errors) {
                 cstr err = printParserError(it.ref);
-                cstr_append_sv(&astDump, cstr_sv(&err));
-                cstr_append(&astDump, "\n");
+                cstr_append_sv(&cstDump, cstr_sv(&err));
+                cstr_append(&cstDump, "\n");
                 cstr_drop(&err);
             }
         }
 
-        sprintf(filename, TEST_DIR "/code_results/%s.ast", name);
-        writeTextFile(filename, cstr_sv(&astDump));
-        if (!cstr_eq(&expected, &astDump)) {
-            fprintf(stderr, "AST doesn't match: %s\n", name);
+        sprintf(filename, TEST_DIR "/code_results/%s.cst", name);
+        writeTextFile(filename, cstr_sv(&cstDump));
+        if (!cstr_eq(&expected, &cstDump)) {
+            fprintf(stderr, "CST doesn't match: %s\n", name);
             ok = false;
         }
 

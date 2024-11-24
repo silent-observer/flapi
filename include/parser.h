@@ -3,7 +3,7 @@
 
 #include "memcxt.h"
 
-#include "ast.h"
+#include "cst.h"
 #include "token.h"
 #include <stc/cstr.h>
 #include <stdio.h>
@@ -34,7 +34,7 @@ typedef struct {
 #include <stc/vec.h>
 
 typedef struct {
-    Ast ast;
+    Cst cst;
     ParserErrorVec errors;
 } ParseResult;
 

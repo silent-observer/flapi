@@ -1,23 +1,23 @@
-#include "ast.h"
+#include "cst.h"
 #include <stc/cstr.h>
 #include <stdio.h>
 
-static inline b32 astChildMatches(AstChild *lhs, AstChild *rhs);
+static inline b32 cstChildMatches(CstChild *lhs, CstChild *rhs);
 
-static inline b32 astNodeMatches(AstNode *lhs, AstNode *rhs) {
+static inline b32 cstNodeMatches(CstNode *lhs, CstNode *rhs) {
     if (lhs->kind != rhs->kind)
         return false;
-    if (AstChildren_size(&lhs->children) != AstChildren_size(&rhs->children))
+    if (CstChildren_size(&lhs->children) != CstChildren_size(&rhs->children))
         return false;
-    AstChild *lhs_children = AstChildren_data(&lhs->children);
-    AstChild *rhs_children = AstChildren_data(&rhs->children);
-    for (u32 i = 0; i < AstChildren_size(&lhs->children); i++)
-        if (!astChildMatches(&lhs_children[i], &rhs_children[i]))
+    CstChild *lhs_children = CstChildren_data(&lhs->children);
+    CstChild *rhs_children = CstChildren_data(&rhs->children);
+    for (u32 i = 0; i < CstChildren_size(&lhs->children); i++)
+        if (!cstChildMatches(&lhs_children[i], &rhs_children[i]))
             return false;
     return true;
 }
 
-static inline b32 astChildMatches(AstChild *lhs, AstChild *rhs) {
+static inline b32 cstChildMatches(CstChild *lhs, CstChild *rhs) {
     if (lhs->isToken != rhs->isToken)
         return false;
 
@@ -25,20 +25,20 @@ static inline b32 astChildMatches(AstChild *lhs, AstChild *rhs) {
         return lhs->token->kind == rhs->token->kind &&
                csview_eq(&lhs->token->text, &rhs->token->text);
     else
-        return astNodeMatches(lhs->node, rhs->node);
+        return cstNodeMatches(lhs->node, rhs->node);
 }
 
-b32 astMatches(Ast *lhs, Ast *rhs) {
-    return astNodeMatches(lhs->root, rhs->root);
+b32 cstMatches(Cst *lhs, Cst *rhs) {
+    return cstNodeMatches(lhs->root, rhs->root);
 }
 
 typedef struct {
-    Ast ast;
+    Cst cst;
     TokenPool tokens;
     const char *input;
-} AstParser;
+} CstParser;
 
-static inline usize countUntilEnd(const AstParser *p) {
+static inline usize countUntilEnd(const CstParser *p) {
     usize count = 0;
     while (true)
         switch (p->input[count]) {
@@ -56,7 +56,7 @@ static inline usize countUntilEnd(const AstParser *p) {
         }
 }
 
-static inline void skipWhiteSpace(AstParser *p) {
+static inline void skipWhiteSpace(CstParser *p) {
     while (true)
         switch (*p->input) {
             case ' ':
@@ -70,10 +70,10 @@ static inline void skipWhiteSpace(AstParser *p) {
         }
 }
 
-static AstNodeKind parseNodeKind(csview word) {
-    for (u32 i = 0; i < c_arraylen(AST_KIND_NAMES); i++) {
-        if (csview_eq(&AST_KIND_NAMES[i], &word)) {
-            return (AstNodeKind)i;
+static CstNodeKind parseNodeKind(csview word) {
+    for (u32 i = 0; i < c_arraylen(CST_KIND_NAMES); i++) {
+        if (csview_eq(&CST_KIND_NAMES[i], &word)) {
+            return (CstNodeKind)i;
         }
     }
     fprintf(stderr, "Unknown node kind: %.*s\n", c_SV(word));
@@ -90,9 +90,9 @@ static TokenKind parseTokenKind(csview word) {
     assert(0);
 }
 
-static AstChild parseChild(AstParser *p);
+static CstChild parseChild(CstParser *p);
 
-static AstNode *parseNode(AstParser *p) {
+static CstNode *parseNode(CstParser *p) {
     assert(p->input[0] == '(');
     p->input++;
 
@@ -100,10 +100,10 @@ static AstNode *parseNode(AstParser *p) {
     csview word = csview_from_n(p->input, wordLength);
     p->input += wordLength;
 
-    AstNodeKind kind = parseNodeKind(word);
-    AstNode *node = AstPool_new(&p->ast.pool);
+    CstNodeKind kind = parseNodeKind(word);
+    CstNode *node = CstPool_new(&p->cst.pool);
     node->kind = kind;
-    node->children = AstChildren_init();
+    node->children = CstChildren_init();
 
     while (true) {
         skipWhiteSpace(p);
@@ -115,14 +115,14 @@ static AstNode *parseNode(AstParser *p) {
             p->input++;
             break;
         }
-        AstChildren_push(
+        CstChildren_push(
             &node->children,
             parseChild(p));
     }
     return node;
 }
 
-static Token *parseToken(AstParser *p) {
+static Token *parseToken(CstParser *p) {
     assert(p->input[0] == '[');
     p->input++;
 
@@ -153,39 +153,39 @@ static Token *parseToken(AstParser *p) {
     return token;
 }
 
-static AstChild parseChild(AstParser *p) {
+static CstChild parseChild(CstParser *p) {
     if (p->input[0] == '(') {
-        return (AstChild){
+        return (CstChild){
             .isToken = false,
             .node = parseNode(p),
         };
     } else {
-        return (AstChild){
+        return (CstChild){
             .isToken = true,
             .token = parseToken(p),
         };
     }
 }
 
-ParseAstResult parseSExprAst(const char *input) {
-    AstParser p = {
+ParseCstResult parseSExprCst(const char *input) {
+    CstParser p = {
         .input = input,
         .tokens = TokenPool_init(16),
-        .ast = (Ast){
-            .pool = AstPool_init(16),
+        .cst = (Cst){
+            .pool = CstPool_init(16),
             .root = NULL,
         },
     };
     skipWhiteSpace(&p);
-    p.ast.root = parseNode(&p);
-    return (ParseAstResult){.ast = p.ast, .tokens = p.tokens};
+    p.cst.root = parseNode(&p);
+    return (ParseCstResult){.cst = p.cst, .tokens = p.tokens};
 }
 
 typedef struct {
     cstr out;
     u32 currentIdent;
     const char *spaces;
-} AstNodePrinter;
+} CstNodePrinter;
 
 // static u32 calcTokenLen(const Token *token) {
 //     if (token->kind < TOKEN_EQUAL) {
@@ -195,9 +195,9 @@ typedef struct {
 //     }
 // }
 
-// static u32 calcNodeLen(const AstNode *n) {
-//     u32 len = 2 + AST_KIND_NAMES[n->kind].size;
-//     c_foreach(it, AstChildren, n->children) {
+// static u32 calcNodeLen(const CstNode *n) {
+//     u32 len = 2 + CST_KIND_NAMES[n->kind].size;
+//     c_foreach(it, CstChildren, n->children) {
 //         if (it.ref->isToken)
 //             len += calcTokenLen(it.ref->token) + 1;
 //         else
@@ -206,7 +206,7 @@ typedef struct {
 //     return len;
 // }
 
-static void printToken(AstNodePrinter *p, const Token *token) {
+static void printToken(CstNodePrinter *p, const Token *token) {
     cstr_append(&p->out, "[");
     cstr_append(&p->out, TOKEN_KIND_NAMES[token->kind].str);
     if (token->kind < TOKEN_EQUAL) {
@@ -216,18 +216,18 @@ static void printToken(AstNodePrinter *p, const Token *token) {
     cstr_append(&p->out, "]");
 }
 
-static void printNode(AstNodePrinter *p, AstNode *n) {
+static void printNode(CstNodePrinter *p, CstNode *n) {
     cstr_append(&p->out, "(");
-    cstr_append_sv(&p->out, AST_KIND_NAMES[n->kind]);
+    cstr_append_sv(&p->out, CST_KIND_NAMES[n->kind]);
     // i32 len = calcNodeLen(n);
-    i32 childrenCount = AstChildren_size(&n->children);
-    AstChild *data = AstChildren_data(&n->children);
+    i32 childrenCount = CstChildren_size(&n->children);
+    CstChild *data = CstChildren_data(&n->children);
     b32 isMultiline = childrenCount > 1 ||
                       (childrenCount == 1 && !data[0].isToken); // len + p->currentIdent > 80;
     if (isMultiline)
         p->currentIdent++;
 
-    c_foreach(it, AstChildren, n->children) {
+    c_foreach(it, CstChildren, n->children) {
         if (isMultiline) {
             cstr_append(&p->out, "\n");
             c_forrange(p->currentIdent)
@@ -251,12 +251,12 @@ static void printNode(AstNodePrinter *p, AstNode *n) {
     cstr_append(&p->out, ")");
 }
 
-cstr printSExprAst(const AstNode *n) {
-    AstNodePrinter p = {
+cstr printSExprCst(const CstNode *n) {
+    CstNodePrinter p = {
         .out = cstr_init(),
         .currentIdent = 0,
         .spaces = "  ",
     };
-    printNode(&p, (AstNode *)n);
+    printNode(&p, (CstNode *)n);
     return p.out;
 }
