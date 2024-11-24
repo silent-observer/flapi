@@ -1,7 +1,10 @@
 #ifndef TYPEID_H
 #define TYPEID_H
 
+#include "memcxt.h"
+
 #include "types.h"
+#include <stc/cstr.h>
 typedef u64 TypeId;
 
 typedef enum {

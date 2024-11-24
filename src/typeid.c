@@ -1,5 +1,4 @@
 #include "typeid.h"
-#include <stc/cstr.h>
 
 static TypeMap typeMap = {0};
 
@@ -20,7 +19,8 @@ TypeId hashTypeRecursive1(TypeKind kind, TypeId arg) {
 TypeId hashType(const Type *t) {
     u64 h = hashTypeSimple(t->kind);
     if (t->kind == TYPE_NAMED || t->kind == TYPE_GENERIC_PARAM) {
-        return c_hash_mix(h, cstr_hash(&t->str));
+        u64 h2 = cstr_hash(&t->str);
+        return c_hash_mix(h, h2);
     }
     c_foreach(it, TypeChildren, t->children) {
         u64 h2 = c_hash_n(it.ref, sizeof(*it.ref));
@@ -36,5 +36,5 @@ TypeId saveType(const Type *t) {
 }
 
 Type *getType(TypeId id) {
-    return TypeMap_get(&typeMap, id);
+    return &TypeMap_get(&typeMap, id)->second;
 }

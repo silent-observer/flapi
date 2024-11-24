@@ -4,7 +4,7 @@ add_rules("mode.debug", "mode.release")
 
 set_languages("c11", "c++17")
 set_warnings("all", "error")
-add_cflags("-Wno-missing-braces")
+add_cflags("-Wno-missing-braces -Wno-discarded-qualifiers")
 
 target("flapi")
     set_kind("binary")

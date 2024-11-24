@@ -28,4 +28,14 @@
     if (!(c))          \
     test_fail(#c)
 
+#define test_assert_cleanup(c, ...) \
+    do                              \
+        if (!(c)) {                 \
+            __VA_ARGS__             \
+            test_fail(#c);          \
+        }                           \
+    while (0)
+
+#define test_assert_defer(c) test_assert_cleanup(c, DEFER)
+
 #endif

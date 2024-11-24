@@ -1,6 +1,8 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include "memcxt.h"
+
 #include "types.h"
 #include <stc/csview.h>
 #include <stc/czview.h>

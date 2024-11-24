@@ -1,3 +1,5 @@
+#include "memcxt.h"
+
 #include "fs.h"
 
 cstr readTextFile(const char *path) {

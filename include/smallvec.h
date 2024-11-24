@@ -19,6 +19,15 @@
 #error "i_N not defined"
 #endif
 
+#if defined STC_ALLOCATOR && !defined i_allocator
+#define i_allocator STC_ALLOCATOR
+#elif !defined i_allocator
+#define i_allocator c
+#endif
+#define i_malloc c_JOIN(i_allocator, _malloc)
+#define i_realloc c_JOIN(i_allocator, _realloc)
+#define i_free c_JOIN(i_allocator, _free)
+
 #define _c_MEMB(name) c_JOIN(i_type, name)
 
 typedef struct {
@@ -40,7 +49,7 @@ static inline void _c_MEMB(_drop)(const i_type *self) {
     if (self->cap <= i_N)
         return;
     assert(self->len == 0);
-    c_free(self->ptr, self->cap * sizeof(i_val));
+    i_free(self->ptr, self->cap * sizeof(i_val));
 }
 
 static inline void _c_MEMB(_clear)(i_type *self) {
@@ -59,7 +68,7 @@ static inline void _c_MEMB(_push)(i_type *self, i_val val) {
     if (self->cap < i_N) {
         self->data[self->cap++] = val;
     } else if (self->cap == i_N) {
-        i_val *ptr = c_malloc(self->cap * 2 * sizeof(i_val));
+        i_val *ptr = i_malloc(self->cap * 2 * sizeof(i_val));
         c_memcpy(ptr, self->data, self->cap * sizeof(i_val));
         ptr[i_N] = val;
         self->ptr = ptr;
@@ -67,7 +76,7 @@ static inline void _c_MEMB(_push)(i_type *self, i_val val) {
         self->len = i_N + 1;
     } else {
         if (self->len == self->cap) {
-            self->ptr = c_realloc(self->ptr, self->cap * sizeof(i_val), self->cap * 2 * sizeof(i_val));
+            self->ptr = i_realloc(self->ptr, self->cap * sizeof(i_val), self->cap * 2 * sizeof(i_val));
             self->cap *= 2;
         }
         self->data[self->len++] = val;
@@ -104,3 +113,8 @@ static inline void _c_MEMB(_next)(i_iter *it) {
 #undef i_val
 #undef i_N
 #undef i_iter
+
+#undef i_allocator
+#undef i_malloc
+#undef i_realloc
+#undef i_free

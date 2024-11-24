@@ -30,17 +30,21 @@ static const Token TOKENS[] = {
 };
 
 int lexer_test() {
+    pushMemCxt();
+#define DEFER popMemCxt();
+
     TokenVec tokens = lex(CODE);
-    test_assert(TokenVec_size(&tokens) == c_arraylen(TOKENS) + 1);
+    test_assert_defer(TokenVec_size(&tokens) == c_arraylen(TOKENS) + 1);
 
     c_forrange(i, c_arraylen(TOKENS)) {
         Token token = tokens.data[i];
-        test_assert(token.kind == TOKENS[i].kind);
-        test_assert(csview_eq(&token.text, &TOKENS[i].text));
-        test_assert(token.line == TOKENS[i].line);
-        test_assert(token.col == TOKENS[i].col);
+        test_assert_defer(token.kind == TOKENS[i].kind);
+        test_assert_defer(csview_eq(&token.text, &TOKENS[i].text));
+        test_assert_defer(token.line == TOKENS[i].line);
+        test_assert_defer(token.col == TOKENS[i].col);
     }
-    test_assert(TokenVec_back(&tokens)->kind == TOKEN_EOF);
+    test_assert_defer(TokenVec_back(&tokens)->kind == TOKEN_EOF);
 
+    DEFER
     test_success();
 }

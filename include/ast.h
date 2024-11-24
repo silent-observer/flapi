@@ -1,6 +1,8 @@
 #ifndef AST_H
 #define AST_H
 
+#include "memcxt.h"
+
 #include "token.h"
 
 #define AST_KIND_LIST                              \

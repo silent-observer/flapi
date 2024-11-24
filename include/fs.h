@@ -1,6 +1,8 @@
 #ifndef FS_H
 #define FS_H
 
+#include "memcxt.h"
+
 #include "types.h"
 #include <stc/cstr.h>
 #include <stc/csview.h>

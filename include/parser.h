@@ -1,6 +1,8 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include "memcxt.h"
+
 #include "ast.h"
 #include "token.h"
 #include <stc/cstr.h>

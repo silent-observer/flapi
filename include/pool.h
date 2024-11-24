@@ -13,18 +13,25 @@
 #error "i_val not defined"
 #endif
 
+#if defined STC_ALLOCATOR && !defined i_allocator
+#define i_allocator STC_ALLOCATOR
+#elif !defined i_allocator
+#define i_allocator c
+#endif
+#define i_malloc c_JOIN(i_allocator, _malloc)
+#define i_realloc c_JOIN(i_allocator, _realloc)
+#define i_free c_JOIN(i_allocator, _free)
+
 #define _c_MEMB(name) c_JOIN(i_type, name)
 
 typedef struct _c_MEMB(__NodeHeader) {
     struct _c_MEMB(__NodeHeader) * next;
-}
-_c_MEMB(__NodeHeader);
+} _c_MEMB(__NodeHeader);
 
 typedef union _c_MEMB(__Item) {
     union _c_MEMB(__Item) * nextFree;
     i_val data;
-}
-_c_MEMB(__Item);
+} _c_MEMB(__Item);
 
 typedef struct {
     i32 len;
@@ -40,7 +47,7 @@ static inline i_type _c_MEMB(_init)(i32 n) {
 static inline _c_MEMB(__NodeHeader) * _c_MEMB(_allocBlock)(i32 n) {
     isize size = sizeof(_c_MEMB(__NodeHeader)) +
                  n * sizeof(_c_MEMB(__Item));
-    _c_MEMB(__NodeHeader) *block = c_malloc(size);
+    _c_MEMB(__NodeHeader) *block = i_malloc(size);
     block->next = NULL;
     return block;
 }
@@ -94,7 +101,7 @@ static inline void _c_MEMB(_drop)(i_type *self) {
     i32 curN = self->n;
     while (block) {
         _c_MEMB(__NodeHeader) *nextBlock = block->next;
-        c_free(block,
+        i_free(block,
                sizeof(_c_MEMB(__NodeHeader)) +
                    curN * sizeof(_c_MEMB(__Item)));
         block = nextBlock;
