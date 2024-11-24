@@ -91,6 +91,7 @@ typedef struct {
 
 struct CstNode {
     CstNodeKind kind;
+    SourceSpan span;
     CstChildren children;
 };
 

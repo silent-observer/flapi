@@ -38,3 +38,10 @@ TypeId saveType(const Type *t) {
 Type *getType(TypeId id) {
     return &TypeMap_get(&typeMap, id)->second;
 }
+
+void initTypeIds(void) {
+    typeMap = TypeMap_init();
+    for (TypeKind kind = TYPE_UNKNOWN; kind < TYPE_NAMED; kind++) {
+        TypeMap_insert(&typeMap, hashTypeSimple(kind), (Type){.kind = kind});
+    }
+}

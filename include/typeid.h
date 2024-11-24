@@ -3,8 +3,9 @@
 
 #include "memcxt.h"
 
-#include "types.h"
 #include <stc/cstr.h>
+
+#include "types.h"
 typedef u64 TypeId;
 
 typedef enum {
@@ -54,5 +55,6 @@ TypeId hashTypeNamed(TypeKind kind, csview str);
 TypeId hashTypeRecursive1(TypeKind kind, TypeId arg);
 TypeId saveType(const Type *t);
 Type *getType(TypeId id);
+void initTypeIds(void);
 
 #endif

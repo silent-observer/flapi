@@ -29,20 +29,38 @@ static inline int cmpSourcePoint(SourcePoint a, SourcePoint b) {
     return a.col - b.col;
 }
 
+static const SourceSpan EMPTY_SPAN = {0};
+
 static inline SourceSpan combineSourceSpans(SourceSpan a, SourceSpan b) {
     SourceSpan span;
-    assert(cmpSourcePoint(a.start, a.end) < 0);
-    assert(cmpSourcePoint(a.end, b.start) < 0);
-    assert(cmpSourcePoint(b.start, b.end) < 0);
+    assert(cmpSourcePoint(a.start, a.end) <= 0);
+    assert(cmpSourcePoint(a.end, b.start) <= 0);
+    assert(cmpSourcePoint(b.start, b.end) <= 0);
+    if (memcmp(&a, &EMPTY_SPAN, sizeof(SourceSpan)) == 0)
+        return b;
+
     span.start = a.start;
     span.end = b.end;
     return span;
 }
 
+static inline void extendSourceSpan(SourceSpan *a, SourceSpan *b) {
+    assert(cmpSourcePoint(a->start, a->end) <= 0);
+    assert(cmpSourcePoint(a->end, b->start) <= 0);
+    assert(cmpSourcePoint(b->start, b->end) <= 0);
+    if (memcmp(a, &EMPTY_SPAN, sizeof(SourceSpan)) == 0)
+        a->start = b->start;
+    a->end = b->end;
+}
+
 static inline SourceSpan unionSourceSpans(SourceSpan a, SourceSpan b) {
     SourceSpan span;
-    assert(cmpSourcePoint(a.start, a.end) < 0);
-    assert(cmpSourcePoint(b.start, b.end) < 0);
+    assert(cmpSourcePoint(a.start, a.end) <= 0);
+    assert(cmpSourcePoint(b.start, b.end) <= 0);
+    if (memcmp(&a, &EMPTY_SPAN, sizeof(SourceSpan)) == 0)
+        return b;
+    if (memcmp(&b, &EMPTY_SPAN, sizeof(SourceSpan)) == 0)
+        return a;
     if (cmpSourcePoint(a.start, b.start) < 0)
         span.start = a.start;
     else

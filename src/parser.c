@@ -1138,23 +1138,32 @@ static Cst buildCst(Parser *p) {
                 CstNode *node = NodeStack_pull(&s);
 
                 assert(!NodeStack_empty(&s));
+                CstNode *parentNode = *NodeStack_top(&s);
+
                 CstChildren_push(
-                    &(*NodeStack_top(&s))->children,
+                    &parentNode->children,
                     (CstChild){
                         .isToken = false,
                         .node = node,
                     });
+                extendSourceSpan(&parentNode->span, &node->span);
                 break;
             }
-            case Advance:
+            case Advance: {
                 assert(!NodeStack_empty(&s));
+                CstNode *parentNode = *NodeStack_top(&s);
+
                 CstChildren_push(
-                    &(*NodeStack_top(&s))->children,
+                    &parentNode->children,
                     (CstChild){
                         .isToken = true,
-                        .token = t++,
+                        .token = t,
                     });
+                SourceSpan s = makeSourceSpan(t->src.line, t->src.col, t->text.size);
+                extendSourceSpan(&parentNode->span, &s);
+                t++;
                 break;
+            }
             default:
                 assert(0);
         }
