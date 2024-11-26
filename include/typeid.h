@@ -28,6 +28,12 @@ typedef enum {
     TYPE_NAMED,
     TYPE_GENERIC_PARAM,
     TYPE_TUPLE,
+
+    TYPE_FN_GLOBAL,
+    TYPE_FN_ANY,
+    TYPE_FN_ONCE,
+    TYPE_FN_ONCE_OR_MORE,
+    TYPE_FN_ONCE_OR_ZERO,
 } TypeKind;
 
 struct Type;
@@ -49,12 +55,13 @@ static inline u64 TypeId_hash(TypeId *id) { return *id; }
 #define i_hash TypeId_hash
 #include <stc/hmap.h>
 
-TypeId hashType(const Type *t);
-TypeId hashTypeSimple(TypeKind kind);
-TypeId hashTypeNamed(TypeKind kind, csview str);
-TypeId hashTypeRecursive1(TypeKind kind, TypeId arg);
-TypeId saveType(const Type *t);
-Type *getType(TypeId id);
-void initTypeIds(void);
+TypeId TypeId_build(const Type *t);
+TypeId TypeId_simple(TypeKind kind);
+TypeId TypeId_named(TypeKind kind, csview str);
+TypeId TypeId_rec1(TypeKind kind, TypeId arg);
+TypeId TypeId_intern(const Type *t);
+Type *TypeId_lookup(TypeId id);
+void TypeTable_init(void);
+void TypeTable_drop(void);
 
 #endif
