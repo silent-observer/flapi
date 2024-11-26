@@ -181,15 +181,15 @@
 )
 
 ------ ERRORS ------
-Syntax error at (1:18): Expected 'Colon' but got '{' which is 'LCurly'
+Syntax error at (1:18): Expected ':' but got '{'
 Syntax error at (1:18): Expected type
-Syntax error at (1:18): Expected 'Comma' but got '{' which is 'LCurly'
-Syntax error at (1:18): Expected 'RParen' but got '{' which is 'LCurly'
-Syntax error at (5:9): Expected 'Colon' but got ',' which is 'Comma'
+Syntax error at (1:18): Expected ',' but got '{'
+Syntax error at (1:18): Expected ')' but got '{'
+Syntax error at (5:9): Expected ':' but got ','
 Syntax error at (5:9): Expected type
-Syntax error at (5:12): Expected 'Colon' but got ')' which is 'RParen'
+Syntax error at (5:12): Expected ':' but got ')'
 Syntax error at (5:12): Expected type
-Syntax error at (9:10): Expected 'Colon' but got ',' which is 'Comma'
+Syntax error at (9:10): Expected ':' but got ','
 Syntax error at (9:10): Expected type
 Syntax error at (10:5): Expected a function definition
 Syntax error at (10:12): Expected a function definition

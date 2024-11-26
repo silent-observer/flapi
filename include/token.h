@@ -104,6 +104,11 @@ static const czview TOKEN_KIND_STRS[TOKEN_KIND_COUNT] = {
 #undef XX
 };
 
+#define tokenKindStr(kind)              \
+    ((kind) < TOKEN_EQUAL               \
+         ? TOKEN_KIND_NAMES[(kind)].str \
+         : TOKEN_KIND_STRS[(kind)].str)
+
 typedef struct {
     csview text;
     TokenKind kind;
