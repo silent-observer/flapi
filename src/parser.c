@@ -243,7 +243,7 @@ static void parseFnModifierList(Parser *p) {
         parseFnModifier(p);
     } while (at(p, TOKEN_K_GIVEN) || at(p, TOKEN_K_WITH));
 
-    closeEvent(p, o, CST_FN_PARAM_LIST);
+    closeEvent(p, o, CST_FN_MODIFIER_LIST);
 }
 
 // FnModifier = GivenModifier | WithModifier
@@ -616,14 +616,14 @@ static void parseGenericArg(Parser *p) {
     closeEvent(p, o, CST_GENERIC_ARG);
 }
 
-// FunctionTypeExpr = FunctionSpec GenericArgList? ('->' TypeExpr)? FnModifierList?
+// FunctionTypeExpr = FunctionSpec TupleTypeExpr ('->' TypeExpr)? FnModifierList?
 static void parseFunctionTypeExpr(Parser *p) {
     assert(at(p, TOKEN_K_FN));
     OpenIndex o = openEvent(p);
 
     parseFunctionSpec(p);
-    if (at(p, TOKEN_LBRACK))
-        parseGenericArgList(p);
+    if (at(p, TOKEN_LPAREN))
+        parseTupleTypeExpr(p);
     if (eat(p, TOKEN_ARROW))
         parseTypeExpr(p);
     if (at(p, TOKEN_K_GIVEN))

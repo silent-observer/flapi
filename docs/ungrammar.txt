@@ -59,7 +59,7 @@ CustomTypeExpr = 'IDENT' GenericArgList?
 GenericArgList = '[' GenericArg+ ']'
 GenericArg = (GenericParamName '=')? TypeExpr ','?
 
-FunctionTypeExpr = FunctionSpec GenericArgList? ('->' TypeExpr)? FnModifierList?
+FunctionTypeExpr = FunctionSpec TupleTypeExpr ('->' TypeExpr)? FnModifierList?
 FunctionSpec = 'fn' ('{' '1' ('+' | '?')? '}')?
 
 TupleTypeExpr = '(' TupleArg* ')'
