@@ -56,6 +56,7 @@ static inline i_val *_c_MEMB(_new)(i_type *self) {
     if (self->freeList) {
         _c_MEMB(__Item) *item = self->freeList;
         self->freeList = item->nextFree;
+        memset(&item->data, 0, sizeof(i_val));
         return &item->data;
     }
 
@@ -78,6 +79,7 @@ static inline i_val *_c_MEMB(_new)(i_type *self) {
                         sizeof(_c_MEMB(__NodeHeader)) +
                         curLen * sizeof(_c_MEMB(__Item));
             self->len++;
+            memset(ptr, 0, sizeof(i_val));
             return (i_val *)ptr;
         }
     }
