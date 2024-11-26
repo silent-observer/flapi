@@ -4,9 +4,10 @@ extern int parser_test(void);
 extern int memcxt_test();
 
 int main() {
-    memcxt_test();
-    lexer_test();
-    cst_test();
-    parser_test();
-    return 0;
+    int r = 0;
+    r |= memcxt_test();
+    r |= lexer_test();
+    r |= cst_test();
+    r |= parser_test();
+    return r;
 }
