@@ -8,7 +8,7 @@
 #define MIN_BITS 4
 #define MAX_BITS 13
 #define BUCKETS (MAX_BITS - MIN_BITS + 1)
-#define CHUNK_SIZE (1 << MAX_BITS)
+#define CHUNK_SIZE (1 << (MAX_BITS + 1))
 
 typedef struct ChunkHeader {
     struct ChunkHeader *next;
@@ -58,12 +58,12 @@ static inline void *bcalloc(BAllocator *allocator, u32 size, u32 count) {
     return balloc0(allocator, size * count);
 }
 
-static inline void *brealloc(void *ptr, u32 size) {
+static inline void *brealloc(void *ptr, u32 oldSize, u32 size) {
     assert(ptr);
     BAllocator *allocator = bfind(ptr);
     if (size > 0) {
         void *newPtr = balloc(allocator, size);
-        memcpy(newPtr, ptr, size);
+        memcpy(newPtr, ptr, oldSize);
         bfree(ptr);
         return newPtr;
     } else {

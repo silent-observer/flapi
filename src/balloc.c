@@ -5,7 +5,7 @@
 
 static usize findBucket(usize size) {
     usize minBlockSize = size + sizeof(BlockHeader);
-    if (minBlockSize > CHUNK_SIZE - sizeof(ChunkHeader))
+    if (minBlockSize * 2 > CHUNK_SIZE - sizeof(ChunkHeader))
         return BIG_BUCKET;
 
     usize bucket = 0;
@@ -37,19 +37,19 @@ static BlockHeader *allocBlock(Bucket *bucket, usize index) {
     ChunkHeader *cur = bucket->head;
     usize curIndex = bucket->len;
     while (1) {
-        usize curLen = (curSize - sizeof(ChunkHeader)) / blockSize;
+        usize curLen = curSize / blockSize - 1;
         if (curIndex < curLen) {
             bucket->len++;
             return (void *)cur + sizeof(ChunkHeader) + curIndex * blockSize;
         }
 
         curIndex -= curLen;
+        curSize *= 2;
         if (!cur->next) {
-            cur->next = malloc(curSize);
+            cur->next = malloc(curSize - blockSize + sizeof(ChunkHeader));
             cur->next->next = NULL;
         }
         cur = cur->next;
-        curSize *= 2;
     }
 }
 
@@ -59,6 +59,8 @@ static BigBlockHeader *allocBigBlock(BAllocator *allocator, usize size) {
     header->offset = (void *)allocator - (void *)header;
     header->prev = NULL;
     header->next = allocator->bigBlocks;
+    if (header->next)
+        header->next->prev = header;
     allocator->bigBlocks = header;
     return header;
 }
@@ -81,6 +83,8 @@ void *balloc(BAllocator *allocator, u32 size) {
 BAllocator *bfind(void *ptr) {
     BlockHeader *header = ptr - sizeof(BlockHeader);
     void *result = (void *)header + header->offset;
+    if (header->bucketIndex == BIG_BUCKET)
+        result -= sizeof(BigBlockHeader) - sizeof(BlockHeader);
     return result;
 }
 
@@ -91,12 +95,14 @@ void bfree(void *ptr) {
     BlockHeader *header = ptr - sizeof(BlockHeader);
     BAllocator *allocator = bfind(ptr);
     if (header->bucketIndex == BIG_BUCKET) {
-        BigBlockHeader *bigHeader = (BigBlockHeader *)header;
+        BigBlockHeader *bigHeader = ptr - sizeof(BigBlockHeader);
 
         if (bigHeader->prev)
             bigHeader->prev->next = bigHeader->next;
-        else
+        else {
             allocator->bigBlocks = bigHeader->next;
+            allocator->bigBlocks->prev = NULL;
+        }
 
         if (bigHeader->next)
             bigHeader->next->prev = bigHeader->prev;

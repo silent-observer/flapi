@@ -83,7 +83,7 @@ static inline void _c_MEMB(_push)(i_type *self, i_val val) {
             self->ptr = i_realloc(self->ptr, self->cap * sizeof(i_val), self->cap * 2 * sizeof(i_val));
             self->cap *= 2;
         }
-        self->data[self->len++] = val;
+        self->ptr[self->len++] = val;
     }
 }
 

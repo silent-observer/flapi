@@ -1,6 +1,10 @@
 add_requires("stc master")
 
-add_rules("mode.debug", "mode.release")
+add_rules("mode.debug", "mode.release", "mode.check")
+
+set_policy("build.sanitizer.address", true)
+set_policy("build.sanitizer.leak", true)
+set_policy("build.sanitizer.undefined", true)
 
 set_languages("c11", "c++17")
 set_warnings("all", "error")

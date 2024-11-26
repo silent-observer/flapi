@@ -26,12 +26,14 @@ void freeMemCxt(MemCxt cxt) {
 static MemCxt memCxtStack[MAX_MEM_CXTS];
 static u32 memCxtStackCount = 0;
 
-void pushMemCxt(void) {
+MemCxt pushMemCxt(void) {
     assert(memCxtStackCount < MAX_MEM_CXTS);
     MemCxt new = newMemCxt();
     memCxtStack[memCxtStackCount++] = switchMemCxt(new);
+    return new;
 }
 void popMemCxt(void) {
     assert(memCxtStackCount > 0);
-    switchMemCxt(memCxtStack[--memCxtStackCount]);
+    MemCxt old = switchMemCxt(memCxtStack[--memCxtStackCount]);
+    freeMemCxt(old);
 }
