@@ -23,7 +23,7 @@ typedef struct {
         };
         struct {
             TokenKind left_token;
-            TokenKind right_token;
+            const Token *right_token;
         };
     };
 
@@ -60,9 +60,9 @@ static inline cstr printParserError(const ParserError *error) {
         case PARSER_ERROR_PRECEDENCE_AMBIGUOUS:
             cstr_printf(&str,
                         "Syntax error at (%d:%d): Precedence between operators '%s' and '%s' is ambiguous, please use parentheses\n",
-                        error->got->src.line, error->got->src.col,
+                        error->right_token->src.line, error->right_token->src.col,
                         TOKEN_KIND_STRS[error->left_token].str,
-                        TOKEN_KIND_STRS[error->right_token].str);
+                        TOKEN_KIND_STRS[error->right_token->kind].str);
             break;
     }
     return str;

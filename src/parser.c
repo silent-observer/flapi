@@ -60,6 +60,11 @@ static void advance(Parser *parser) {
     EventVec_push(&parser->events, (Event){Advance, CST_ERROR});
 }
 
+static void skip(Parser *parser) {
+    parser->nodeCount++;
+    EventVec_push(&parser->events, (Event){Skip, CST_ERROR});
+}
+
 static TokenKind nth(Parser *parser, i32 n) {
     if (parser->fuel == 0) {
         panic("Parser is stuck");
@@ -79,8 +84,10 @@ static b32 eat(Parser *parser, TokenKind kind) {
     if (at(parser, kind)) {
         advance(parser);
         return true;
-    } else
+    } else {
+        skip(parser);
         return false;
+    }
 }
 
 static b32 expect(Parser *parser, TokenKind kind) {
@@ -101,13 +108,11 @@ static void advanceWithError(Parser *parser, const char *error) {
         &parser->errors,
         (ParserError){
             .kind = PARSER_ERROR_MSG,
-            .msg = error});
+            .msg = error,
+            .got = &parser->tokens[parser->pos],
+        });
     advance(parser);
     closeEvent(parser, o, CST_ERROR);
-}
-
-static void skip(Parser *parser) {
-    EventVec_push(&parser->events, (Event){Skip, CST_ERROR});
 }
 
 typedef enum {
@@ -205,10 +210,8 @@ static void parseFnDef(Parser *p) {
 
     if (eat(p, TOKEN_ARROW)) // 3
         parseTypeExpr(p);    // 4
-    else {
-        skip(p); // 3
+    else
         skip(p); // 4
-    }
 
     if (at(p, TOKEN_K_GIVEN))
         parseFnModifierList(p); // 5
@@ -492,10 +495,8 @@ static void parseVarDef(Parser *p) {
     expect(p, TOKEN_IDENT);  // 0
     if (eat(p, TOKEN_COLON)) // 1
         parseTypeExpr(p);    // 2
-    else {
-        skip(p); // 1
+    else
         skip(p); // 2
-    }
 
     closeEvent(p, o, CST_VAR_DEF);
 }
@@ -619,7 +620,10 @@ static void parseTypeExpr(Parser *p) {
                 &p->errors,
                 (ParserError){
                     .kind = PARSER_ERROR_MSG,
-                    .msg = "Expected type"});
+                    .msg = "Expected type",
+                    .got = &p->tokens[p->pos],
+                });
+            skip(p);
             return;
     }
 }
@@ -697,10 +701,9 @@ static void parseFunctionTypeExpr(Parser *p) {
 
     if (eat(p, TOKEN_ARROW)) // 2
         parseTypeExpr(p);    // 3
-    else {
-        skip(p); // 2
+    else
         skip(p); // 3
-    }
+
     if (at(p, TOKEN_K_GIVEN))
         parseFnModifierList(p); // 4
     else
@@ -1025,7 +1028,7 @@ static ClosedIndex parsePrattExpr(Parser *p, TokenKind left) {
                 (ParserError){
                     .kind = PARSER_ERROR_EXPECTED,
                     .left_token = left,
-                    .right_token = right,
+                    .right_token = &p->tokens[p->pos],
                 });
         }
         if (bp == RIGHT_TIGTER || bp == AMBIGUOUS) {
@@ -1247,7 +1250,7 @@ static ClosedIndex parseIndexOp(Parser *p, ClosedIndex lhs) {
 #include <stc/stack.h>
 
 static Cst buildCst(Parser *p) {
-    CstPool pool = CstPool_init(p->nodeCount);
+    CstPool pool = CstPool_init(2); // CstPool_init(p->nodeCount);
     const Token *t = p->tokens;
     NodeStack s = NodeStack_init();
 

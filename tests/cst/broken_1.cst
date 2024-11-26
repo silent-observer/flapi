@@ -1,0 +1,198 @@
+(Program
+  (FnDef
+    [Fn]
+    [Ident foo]
+    (FnParamList
+      [LParen]
+      (FnParam
+        [Ident a]
+        [Colon]
+        _
+        (BaseTypeExpr [I32])
+        [Comma]
+      )
+      (FnParam
+        [Ident b]
+        _
+        _
+        _
+        _
+      )
+      _
+    )
+    _
+    _
+    _
+    (Block
+      [LCurly]
+      (ReturnStmt
+        [Return]
+        (BinaryExpr
+          (VarExpr [Ident a])
+          [Plus]
+          (VarExpr [Ident b])
+        )
+        [Semi]
+      )
+      [RCurly]
+    )
+  )
+  (FnDef
+    [Fn]
+    [Ident bar]
+    (FnParamList
+      [LParen]
+      (FnParam
+        [Ident a]
+        _
+        _
+        _
+        [Comma]
+      )
+      (FnParam
+        [Ident b]
+        _
+        _
+        _
+        _
+      )
+      [RParen]
+    )
+    _
+    _
+    _
+    (Block
+      [LCurly]
+      (ReturnStmt
+        [Return]
+        (BinaryExpr
+          (VarExpr [Ident a])
+          [Plus]
+          (VarExpr [Ident b])
+        )
+        [Semi]
+      )
+      [RCurly]
+    )
+  )
+  (FnDef
+    [Fn]
+    [Ident baz]
+    (FnParamList
+      [LParen]
+      (FnParam
+        [Ident a]
+        _
+        _
+        _
+        [Comma]
+      )
+      (FnParam
+        [Ident b]
+        [Colon]
+        _
+        (BaseTypeExpr [I32])
+        _
+      )
+      [RParen]
+    )
+    _
+    _
+    _
+    _
+  )
+  (Error [Return])
+  (Error [Ident a])
+  (Error [Plus])
+  (Error [Ident b])
+  (Error [Semi])
+  (FnDef
+    [Fn]
+    [Ident main]
+    (FnParamList
+      [LParen]
+      [RParen]
+    )
+    _
+    _
+    _
+    (Block
+      [LCurly]
+      (ExprStmt
+        (CallExpr
+          (VarExpr [Ident foo])
+          (ArgList
+            [LParen]
+            (Arg
+              (LiteralExpr [Decimal 1])
+              [Comma]
+            )
+            (Arg
+              (LiteralExpr [Decimal 2])
+              _
+            )
+            [RParen]
+          )
+          _
+        )
+        [Semi]
+      )
+      (ExprStmt
+        (CallExpr
+          (VarExpr [Ident bar])
+          (ArgList
+            [LParen]
+            (Arg
+              (LiteralExpr [Decimal 3])
+              [Comma]
+            )
+            (Arg
+              (LiteralExpr [Decimal 4])
+              _
+            )
+            [RParen]
+          )
+          _
+        )
+        [Semi]
+      )
+      (ExprStmt
+        (CallExpr
+          (VarExpr [Ident baz])
+          (ArgList
+            [LParen]
+            (Arg
+              (LiteralExpr [Decimal 5])
+              [Comma]
+            )
+            (Arg
+              (LiteralExpr [Decimal 6])
+              _
+            )
+            [RParen]
+          )
+          _
+        )
+        [Semi]
+      )
+      [RCurly]
+    )
+  )
+)
+
+------ ERRORS ------
+Syntax error at (1:18): Expected 'Colon' but got '{' which is 'LCurly'
+Syntax error at (1:18): Expected type
+Syntax error at (1:18): Expected 'Comma' but got '{' which is 'LCurly'
+Syntax error at (1:18): Expected 'RParen' but got '{' which is 'LCurly'
+Syntax error at (5:9): Expected 'Colon' but got ',' which is 'Comma'
+Syntax error at (5:9): Expected type
+Syntax error at (5:12): Expected 'Colon' but got ')' which is 'RParen'
+Syntax error at (5:12): Expected type
+Syntax error at (9:10): Expected 'Colon' but got ',' which is 'Comma'
+Syntax error at (9:10): Expected type
+Syntax error at (10:5): Expected a function definition
+Syntax error at (10:12): Expected a function definition
+Syntax error at (10:13): Expected a function definition
+Syntax error at (10:14): Expected a function definition
+Syntax error at (10:15): Expected a function definition

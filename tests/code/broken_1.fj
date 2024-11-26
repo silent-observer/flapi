@@ -1,0 +1,16 @@
+fn foo(a: i32, b {
+    return a + b;
+}
+
+fn bar(a, b) {
+    return a+b;
+}
+
+fn baz (a, b: i32)
+    return a+b;
+
+fn main() {
+    foo(1, 2);
+    bar(3, 4);
+    baz(5, 6);
+}

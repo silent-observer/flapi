@@ -8,6 +8,7 @@
 static const char *PARSER_TESTS[] = {
     "while_counter",
     "fibonacci",
+    "broken_1",
 };
 
 int parser_test(void) {
@@ -34,7 +35,6 @@ int parser_test(void) {
             c_foreach(it, ParserErrorVec, parseResult.errors) {
                 cstr err = printParserError(it.ref);
                 cstr_append_sv(&cstDump, cstr_sv(&err));
-                cstr_append(&cstDump, "\n");
                 cstr_drop(&err);
             }
         }
