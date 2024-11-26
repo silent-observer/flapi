@@ -7,12 +7,15 @@
       (FnParam
         [Ident x]
         [Colon]
+        _
         (BaseTypeExpr [I32])
+        _
       )
       [RParen]
     )
     [Arrow]
     (BaseTypeExpr [I32])
+    _
     (Block
       [LCurly]
       (ExprStmt
@@ -35,10 +38,15 @@
             )
           )
         )
+        _
       )
       (LetStmt
         [Let]
-        (VarDef [Ident f1])
+        (VarDef
+          [Ident f1]
+          _
+          _
+        )
         [Equal]
         (CallExpr
           (VarExpr [Ident fib])
@@ -50,15 +58,21 @@
                 [Minus]
                 (LiteralExpr [Decimal 1])
               )
+              _
             )
             [RParen]
           )
+          _
         )
         [Semi]
       )
       (LetStmt
         [Let]
-        (VarDef [Ident f2])
+        (VarDef
+          [Ident f2]
+          _
+          _
+        )
         [Equal]
         (CallExpr
           (VarExpr [Ident fib])
@@ -70,9 +84,11 @@
                 [Minus]
                 (LiteralExpr [Decimal 2])
               )
+              _
             )
             [RParen]
           )
+          _
         )
         [Semi]
       )

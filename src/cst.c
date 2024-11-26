@@ -18,14 +18,16 @@ static inline b32 cstNodeMatches(CstNode *lhs, CstNode *rhs) {
 }
 
 static inline b32 cstChildMatches(CstChild *lhs, CstChild *rhs) {
-    if (lhs->isToken != rhs->isToken)
+    if (lhs->kind != rhs->kind)
         return false;
 
-    if (lhs->isToken)
+    if (lhs->kind == CST_CHILD_TOKEN)
         return lhs->token->kind == rhs->token->kind &&
                csview_eq(&lhs->token->text, &rhs->token->text);
-    else
+    else if (lhs->kind == CST_CHILD_NODE)
         return cstNodeMatches(lhs->node, rhs->node);
+    else
+        return true;
 }
 
 b32 cstMatches(Cst *lhs, Cst *rhs) {
@@ -154,14 +156,19 @@ static Token *parseToken(CstParser *p) {
 }
 
 static CstChild parseChild(CstParser *p) {
+    if (p->input[0] == '_') {
+        p->input++;
+        return (CstChild){.kind = CST_CHILD_NONE};
+    }
+
     if (p->input[0] == '(') {
         return (CstChild){
-            .isToken = false,
+            .kind = CST_CHILD_NODE,
             .node = parseNode(p),
         };
     } else {
         return (CstChild){
-            .isToken = true,
+            .kind = CST_CHILD_TOKEN,
             .token = parseToken(p),
         };
     }
@@ -221,9 +228,9 @@ static void printNode(CstNodePrinter *p, CstNode *n) {
     cstr_append_sv(&p->out, CST_KIND_NAMES[n->kind]);
     // i32 len = calcNodeLen(n);
     i32 childrenCount = CstChildren_size(&n->children);
-    CstChild *data = CstChildren_data(&n->children);
     b32 isMultiline = childrenCount > 1 ||
-                      (childrenCount == 1 && !data[0].isToken); // len + p->currentIdent > 80;
+                      (childrenCount == 1 &&
+                       CstChildren_at(&n->children, 0)->kind == CST_CHILD_NODE); // len + p->currentIdent > 80;
     if (isMultiline)
         p->currentIdent++;
 
@@ -236,10 +243,19 @@ static void printNode(CstNodePrinter *p, CstNode *n) {
             cstr_append(&p->out, " ");
         }
 
-        if (it.ref->isToken)
-            printToken(p, it.ref->token);
-        else
-            printNode(p, it.ref->node);
+        switch (it.ref->kind) {
+            case CST_CHILD_NONE:
+                cstr_append(&p->out, "_");
+                break;
+            case CST_CHILD_TOKEN:
+                printToken(p, it.ref->token);
+                break;
+            case CST_CHILD_NODE:
+                printNode(p, it.ref->node);
+                break;
+            default:
+                assert(0);
+        }
     }
 
     if (isMultiline) {

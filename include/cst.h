@@ -78,8 +78,14 @@ static const csview CST_KIND_NAMES[CST_NODE_TYPE_MAX] = {
 struct CstNode;
 typedef struct CstNode CstNode;
 
+typedef enum {
+    CST_CHILD_NONE,
+    CST_CHILD_NODE,
+    CST_CHILD_TOKEN,
+} CstChildKind;
+
 typedef struct {
-    b8 isToken;
+    CstChildKind kind;
     union {
         const Token *token;
         CstNode *node;

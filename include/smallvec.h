@@ -64,6 +64,10 @@ static inline i_val *_c_MEMB(_data)(i_type *self) {
     return self->cap <= i_N ? &self->data[0] : self->ptr;
 }
 
+static inline i_val *_c_MEMB(_at)(i_type *self, i32 i) {
+    return self->cap <= i_N ? &self->data[i] : &self->ptr[i];
+}
+
 static inline void _c_MEMB(_push)(i_type *self, i_val val) {
     if (self->cap < i_N) {
         self->data[self->cap++] = val;

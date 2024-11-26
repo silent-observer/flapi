@@ -1,21 +1,28 @@
-Program = Definition*
+// [n] means that the token/node is present at a particular index in the CST children vector
+// [*] means that the node is repeated, so it takes up unknown number of indexes
+// [?] means that the index is not known in advance
+// (n) means node is expected to have exactly n children
+// (*) means node can have unbounded number of children
+// := means that the symbol has no node of its own, forwarding to one of the defined nodes
 
-Definition =
+Program = Definition*[*]
+
+Definition :=
    FnDef
  | StructDef
  | EnumDef
 
-FnDef = 'fn' 'IDENT' FnParamList ('->' TypeExpr)? FnModifierList? Block
-FnParamList = '(' FnParam* ')'
-FnParam = 'IDENT' ':' 'mut'? TypeExpr ','?
-FnModifierList = FnModifier+
-FnModifier = GivenModifier | WithModifier
-GivenModifier = 'given' '(' ImplicitClause+ ')'
-WithModifier = 'with' '(' ImplicitClause+ ')'
-ImplicitClause = ('IDENT' ':')? TypeExpr ','?
+FnDef(7) = 'fn'[0] 'IDENT'[1] FnParamList[2] ('->'[3] TypeExpr[4])? FnModifierList?[5] Block[6]
+FnParamList(*) = '('[0] FnParam*[*] ')'[?]
+FnParam(5) = 'IDENT'[0] ':'[1] 'var'?[2] TypeExpr[3] ','?[4]
+FnModifierList(*) = FnModifier+[*]
+FnModifier := GivenModifier | WithModifier
+GivenModifier(*) = 'given'[0] '('[1] ImplicitClause+[*] ')'[?]
+WithModifier(*) = 'with'[0] '('[1] ImplicitClause+[*] ')'[?]
+ImplicitClause(4) = ('IDENT'[0] ':'[1])? TypeExpr[2] ','?[3]
 
-Block = '{' Statement+ '}'
-Statement = 
+Block(*) = '{'[0] Statement+[*] '}'[?]
+Statement :=
    ExprStmt
  | LetStmt
  | VarStmt
@@ -24,24 +31,24 @@ Statement =
  | BreakStmt
  | ContinueStmt
 
-ExprStmt =
-   BlocklessExpr ';'
- | BlockExpr
-LetStmt = 'let' VarDef '=' Expr ';'
-VarStmt = 'var' VarDef '=' Expr ';'
-WithStmt = 'with' VarDef = Expr ';'
-VarDef = 'IDENT' (':' TypeExpr)?
-ReturnStmt = 'return' Expr? ';'
-BreakStmt = 'break' Expr? ';'
-ContinueStmt = 'continue' ';'
+ExprStmt(2) =
+   BlocklessExpr[0] ';'[1]
+ | BlockExpr[0]
+LetStmt(5) = 'let'[0] VarDef[1] '='[2] Expr[3] ';'[4]
+VarStmt(5) = 'var'[0] VarDef[1] '='[2] Expr[3] ';'[4]
+WithStmt(5) = 'with'[0] VarDef[1] '='[2] Expr[3] ';'[4]
+VarDef(3) = 'IDENT'[0] (':'[1] TypeExpr[2])?
+ReturnStmt(3) = 'return'[0] Expr?[1] ';'[2]
+BreakStmt(3) = 'break'[0] Expr?[1] ';'[2]
+ContinueStmt(2) = 'continue'[0] ';'[1]
 
-TypeExpr = 
+TypeExpr :=
    BaseTypeExpr
  | GenericParamName
  | CustomTypeExpr
  | FunctionTypeExpr
  | TupleTypeExpr
-BaseTypeExpr =
+BaseTypeExpr(1) = // everything is [0]
    'i8'
  | 'i16'
  | 'i32'
@@ -54,37 +61,37 @@ BaseTypeExpr =
  | 'char'
  | 'bool'
 
-GenericParamName = '%' 'IDENT'
-CustomTypeExpr = 'IDENT' GenericArgList?
-GenericArgList = '[' GenericArg+ ']'
-GenericArg = (GenericParamName '=')? TypeExpr ','?
+GenericParamName(2) = '%'[0] 'IDENT'[1]
+CustomTypeExpr(2) = 'IDENT'[0] GenericArgList?[1]
+GenericArgList(*) = '['[0] GenericArg+[*] ']'[?]
+GenericArg(4) = (GenericParamName[0] '='[1])? TypeExpr[2] ','?[3]
 
-FunctionTypeExpr = FunctionSpec TupleTypeExpr ('->' TypeExpr)? FnModifierList?
-FunctionSpec = 'fn' ('{' '1' ('+' | '?')? '}')?
+FunctionTypeExpr(5) = FunctionSpec[0] TupleTypeExpr[1] ('->'[2] TypeExpr[3])? FnModifierList?[4]
+FunctionSpec(5) = 'fn'[0] ('{'[1] '1'[2] ('+'[3] | '?'[3])? '}'[4])?
 
-TupleTypeExpr = '(' TupleArg* ')'
-TypeArg = TypeExpr ','?
+TupleTypeExpr(*) = '('[0] TupleArg*[*] ')'[?]
+TypeArg(2) = TypeExpr[0] ','?[1]
 
-Expr = BlocklessExpr | BlockExpr
-BlocklessExpr = SimpleExpr AssignPostfix?
-AssignPostfix = AssignOp Expr
-AssignOp = '=' | '+=' | '-=' | '*=' | '/=';
-BlockExpr =
+Expr := BlocklessExpr | BlockExpr
+BlocklessExpr := SimpleExpr | AssignExpr
+AssignExpr(3) = SimpleExpr[0] AssignOp[1] Expr[2]
+AssignOp := '=' | '+=' | '-=' | '*=' | '/=';
+BlockExpr :=
    IfExpr
  | WhileExpr
  | LoopExpr
  | ForExpr
 
-IfExpr = IfClause ElseIfClause* ElseClause?
-IfClause = 'if' SimpleExpr Block
-ElseIfClause = 'else' 'if' SimpleExpr Block
-ElseClause = 'else' Block
+IfExpr(*) = IfClause[0] ElseIfClause*[*] ElseClause?[?]
+IfClause(3) = 'if'[0] SimpleExpr[1] Block[2]
+ElseIfClause(4) = 'else'[0] 'if'[1] SimpleExpr[2] Block[3]
+ElseClause(2) = 'else'[0] Block[1]
 
-WhileExpr = 'while' SimpleExpr Block
-LoopExpr = 'loop' Block
-ForExpr = 'for' VarDef 'in' SimpleExpr Block
+WhileExpr(3) = 'while'[0] SimpleExpr[1] Block[2]
+LoopExpr(2) = 'loop'[0] Block[1]
+ForExpr(5) = 'for'[0] VarDef[1] 'in'[2] SimpleExpr[3] Block[4]
 
-SimpleExpr = <Pratt Parser> (UnaryExpr)
+SimpleExpr = <Pratt Parser> (BinaryExpr(3) = UnaryExpr[0] BinaryOp[1] UnaryExpr[2])
     L\R| * / % + - | > >= < <= == != | and or | |>
     ---|-----------|-----------------|--------|----
     *  | L L L L L | L L  L L  L  L  |  L  L  | L
@@ -104,56 +111,57 @@ SimpleExpr = <Pratt Parser> (UnaryExpr)
     or | R R R R R | R R  R R  R  R  |  R  L  | L
     ---|-----------|-----------------|--------|----
     |> | R R R R R | R R  R R  R  R  |  R  R  | L
-PostfixOp =
-   DotOp
- | CallOp
- | IndexOp
+PostfixExpr :=
+   DelimetedExpr
+ | DotExpr
+ | CallExpr
+ | IndexExpr
 
-UnaryExpr =
-   PostfixExpr
- | UnaryOp PostfixExpr
-UnaryOp = '+' | '-' | 'not'
-
-
-
-DotOp = '.' 'IDENT'
-CallOp = 
-   ArgList LambdaExpr?
- | LambdaExpr
-ArgList = '(' Arg* ')'
-Arg = Expr ','?
-LambdaExpr = LambdaParamList Block
-LambdaParamList = '|' LambdaParam* '|'
-LambdaParam = 'IDENT' (':' 'var'? Type)?
-IndexOp = '[' Expr ']'
+UnaryExpr :=
+       PostfixExpr
+ (2) | UnaryOp[0] PostfixExpr[1]
+UnaryOp := '+' | '-' | 'not'
 
 
-DelimetedExpr =
+
+DotExpr(3) = PostfixExpr[0] '.'[1] 'IDENT'[2]
+CallExpr(3) =
+   PostfixExpr[0] ArgList[1] LambdaExpr?[2]
+ | PostfixExpr[0] LambdaExpr[1]
+ArgList(*) = '('[0] Arg*[*] ')'[?]
+Arg(2) = Expr[0] ','?[1]
+LambdaExpr(2) = LambdaParamList[0] Block[1]
+LambdaParamList(*) = '|'[0] LambdaParam*[*] '|'[?]
+LambdaParam(4) = 'IDENT'[0] (':'[1] 'var'?[2] Type[3])?
+IndexExpr(4) = PostfixExpr[0] '['[1] Expr[2] ']'[3]
+
+
+DelimetedExpr :=
    LiteralExpr
  | VarExpr
  | LambdaExpr
  | ParenExpr
 
-LiteralExpr =
+LiteralExpr(1) = // everything is [0]
    'DECIMAL'
  | 'BINARY'
  | 'STRING'
  | 'CHAR'
  | 'true'
  | 'false'
-VarExpr = 'IDENT'
-ParenExpr  = '(' Expr ')'
+VarExpr(1) = 'IDENT'[0]
+ParenExpr(3) = '('[0] Expr[1] ')'[2]
 
-StructDef = 'struct' CustomTypeExpr StructEntryList
-StructEntryList = '{' StructEntry* '}'
-StructEntry = 'IDENT' ':' Type ','?
+StructDef(3) = 'struct'[0] CustomTypeExpr[1] StructEntryList[2]
+StructEntryList(*) = '{'[0] StructEntry*[*] '}'[?]
+StructEntry(4) = 'IDENT'[0] ':'[1] Type[2] ','?[3]
 
-EnumDef = 'enum' CustomTypeExpr EnumEntryList
-EnumEntryList = '{' EnumEntry* '}'
-EnumEntry = 
+EnumDef(3) = 'enum'[0] CustomTypeExpr[1] EnumEntryList[2]
+EnumEntryList(*) = '{'[0] EnumEntry*[*] '}'[?]
+EnumEntry :=
    EnumEntrySimple
  | EnumEntryTuple
  | EnumEntryStruct
-EnumEntrySimple = 'IDENT'
-EnumEntryTuple = 'IDENT' TupleTypeExpr
-EnumEntryStruct = 'IDENT' StructEntryList
+EnumEntrySimple(1) = 'IDENT'[0]
+EnumEntryTuple(2) = 'IDENT'[0] TupleTypeExpr[1]
+EnumEntryStruct(2) = 'IDENT'[0] StructEntryList[1]
