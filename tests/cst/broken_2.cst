@@ -1,0 +1,40 @@
+(Program
+  (FnDef
+    [Def]
+    [Ident foo]
+    (FnParamList
+      [LParen]
+      (FnParam
+        [Ident x]
+        [Colon]
+        _
+        (BaseTypeExpr [I32])
+        [Comma]
+      )
+      (Error [Comma])
+      (FnParam
+        [Ident y]
+        [Colon]
+        _
+        (BaseTypeExpr [I32])
+        _
+      )
+      [RParen]
+    )
+    _
+    _
+    _
+    (Block
+      [LCurly]
+      (ReturnStmt
+        [Return]
+        _
+        [Semi]
+      )
+      [RCurly]
+    )
+  )
+)
+
+------ ERRORS ------
+Syntax error at (1:17): Expected a function parameter

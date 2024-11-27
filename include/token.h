@@ -53,6 +53,7 @@
 
 #define TOKEN_KEY_LIST                              \
     XX(TOKEN_K_FN, "Fn", "fn")                      \
+    XX(TOKEN_K_DEF, "Def", "def")                   \
     XX(TOKEN_K_IF, "If", "if")                      \
     XX(TOKEN_K_ELSE, "Else", "else")                \
     XX(TOKEN_K_FOR, "For", "for")                   \

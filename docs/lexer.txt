@@ -14,8 +14,8 @@ SYMBOLS:
     ( ) [ ] { }
 
 KEYWORDS:
-    fn if else for in while loop break continue var let return
+    fn def if else for in while loop break continue var let return
     and or not
-    given handled interface exec with forward
+    given interface exec with forward
     true false
     i8 i16 i32 i64 u8 u16 u32 u64 str char bool

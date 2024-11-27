@@ -9,6 +9,7 @@ static const char *PARSER_TESTS[] = {
     "while_counter",
     "fibonacci",
     "broken_1",
+    "broken_2",
 };
 
 int parser_test(void) {

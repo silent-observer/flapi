@@ -1,15 +1,15 @@
-fn foo(a: i32, b {
+def foo(a: i32, b {
     return a + b;
 }
 
-fn bar(a, b) {
+def bar(a, b) {
     return a+b;
 }
 
-fn baz (a, b: i32)
+def baz (a, b: i32)
     return a+b;
 
-fn main() {
+def main() {
     foo(1, 2);
     bar(3, 4);
     baz(5, 6);

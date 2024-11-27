@@ -1,6 +1,6 @@
 (Program
   (FnDef
-    [Fn]
+    [Def]
     [Ident fib]
     (FnParamList
       [LParen]
