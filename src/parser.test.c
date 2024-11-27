@@ -10,6 +10,8 @@ static const char *PARSER_TESTS[] = {
     "fibonacci",
     "broken_1",
     "broken_2",
+    "broken_3",
+    "broken_4",
 };
 
 int parser_test(void) {

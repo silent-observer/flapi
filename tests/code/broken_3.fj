@@ -1,0 +1,6 @@
+def foo(x: i32, , y: i32) {
+    bar(1,
+    let x =
+}
+
+def bar(a: i32, b: i32) {}

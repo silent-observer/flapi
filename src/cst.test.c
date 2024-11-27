@@ -6,6 +6,10 @@
 static const char *CST_TESTS[] = {
     "while_counter",
     "fibonacci",
+    "broken_1",
+    "broken_2",
+    "broken_3",
+    "broken_4",
 };
 
 int cst_test(void) {
@@ -31,7 +35,14 @@ int cst_test(void) {
         cstr out1 = printSExprCst(cst1.cst.root);
         sprintf(filename, TEST_DIR "/cst_results/%s.cst", name);
         writeTextFile(filename, cstr_sv(&out1));
-        if (!cstr_eq(&out1, &cstDump)) {
+
+        // Remove errors
+        isize pos = cstr_find(&cstDump, "\n\n------ ERRORS ------\n");
+        csview expected = pos == c_NPOS
+                              ? cstr_sv(&cstDump)
+                              : csview_slice(cstr_sv(&cstDump), 0, pos);
+
+        if (!cstr_equals_sv(&out1, expected)) {
             fprintf(stderr, "CST doesn't match: %s\n", name);
             ok = false;
         }

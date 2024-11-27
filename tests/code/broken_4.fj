@@ -1,0 +1,17 @@
+def foo() -> i32 {
+    if {
+        return 10;
+    }
+    if 5 > 10 {
+        return 20;
+    }
+    else if {
+        return 30;
+    }
+    while {
+        return 40;
+    }
+    while 5 > 10 {
+        return 50;
+    }
+}
