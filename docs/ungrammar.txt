@@ -7,23 +7,23 @@
 // ! inside [] means that the node is guaranteed to be not NONE
 // E inside [] means that the node can be a CST_ERROR
 
-Program = Definition*[*E]
+Program(*) = Definition*[*!E]
 
 Definition :=
    FnDef
  | StructDef
  | EnumDef
 
-FnDef(7) = 'def'[0] 'IDENT'[1] FnParamList[2] ('->'[3] TypeExpr[4E])? FnModifierList?[5] Block[6]
-FnParamList(*) = '('[0] FnParam*[*] ')'[?]
-FnParam(5) = 'IDENT'[0] ':'[1] 'var'?[2] TypeExpr[3E] ','?[4]
-FnModifierList(*) = FnModifier+[*]
+FnDef(7) = 'def'[0!] 'IDENT'[1] FnParamList[2] ('->'[3] TypeExpr[4E])? FnModifierList?[5] Block[6]
+FnParamList(*) = '('[0!] FnParam*[*!E] ')'[?]
+FnParam(5) = 'IDENT'[0!] ':'[1] 'var'?[2] TypeExpr[3!E] ','?[4]
+FnModifierList(*) = FnModifier+[*!]
 FnModifier := GivenModifier | WithModifier
-GivenModifier(*) = 'given'[0] '('[1] ImplicitClause+[*] ')'[?]
-WithModifier(*) = 'with'[0] '('[1] ImplicitClause+[*] ')'[?]
-ImplicitClause(4) = ('IDENT'[0] ':'[1])? TypeExpr[2E] ','?[3]
+GivenModifier(*) = 'given'[0!] '('[1] ImplicitClause+[*!E] ')'[?]
+WithModifier(*) = 'with'[0!] '('[1] ImplicitClause+[*!E] ')'[?]
+ImplicitClause(*) = ('IDENT'[0] ':'[1])? TypeExpr[2!E] ','?[3]
 
-Block(*) = '{'[0] Statement+[*E] '}'[?]
+Block(*) = '{'[0!] Statement+[*!E] '}'[?]
 Statement :=
    ExprStmt
  | LetStmt
@@ -36,13 +36,13 @@ Statement :=
 ExprStmt(2) =
    BlocklessExpr[0E] ';'[1]
  | BlockExpr[0E]
-LetStmt(5) = 'let'[0] VarDef[1!] '='[2] Expr[3] ';'[4]
-VarStmt(5) = 'var'[0] VarDef[1!] '='[2] Expr[3] ';'[4]
-WithStmt(5) = 'with'[0] VarDef[1!] '='[2] Expr[3] ';'[4]
+LetStmt(5) = 'let'[0!] VarDef[1!] '='[2] Expr[3E] ';'[4]
+VarStmt(5) = 'var'[0!] VarDef[1!] '='[2] Expr[3E] ';'[4]
+WithStmt(5) = 'with'[0!] VarDef[1!] '='[2] Expr[3E] ';'[4]
 VarDef(3) = 'IDENT'[0] (':'[1] TypeExpr[2E])?
-ReturnStmt(3) = 'return'[0] Expr?[1] ';'[2]
-BreakStmt(3) = 'break'[0] Expr?[1] ';'[2]
-ContinueStmt(2) = 'continue'[0] ';'[1]
+ReturnStmt(3) = 'return'[0!] Expr?[1E] ';'[2]
+BreakStmt(3) = 'break'[0!] Expr?[1E] ';'[2]
+ContinueStmt(2) = 'continue'[0!] ';'[1]
 
 TypeExpr :=
    BaseTypeExpr
@@ -63,20 +63,19 @@ BaseTypeExpr(1) = // everything is [0]
  | 'char'
  | 'bool'
 
-GenericParamName(2) = '%'[0] 'IDENT'[1]
-CustomTypeExpr(2) = 'IDENT'[0] GenericArgList?[1]
-GenericArgList(*) = '['[0] GenericArg+[*] ']'[?]
-GenericArg(4) = (GenericParamName[0] '='[1])? TypeExpr[2E] ','?[3]
+GenericParamName(2) = '%'[0!] 'IDENT'[1]
+CustomTypeExpr(2) = 'IDENT'[0!] GenericArgList?[1]
+GenericArgList(*) = '['[0!] TypeArg+[*] ']'[?]
 
-FunctionTypeExpr(5) = FunctionSpec[0!] TupleTypeExpr[1] ('->'[2] TypeExpr[3])? FnModifierList?[4]
-FunctionSpec(5) = 'fn'[0] ('['[1] '1'[2] ('+'[3] | '?'[3])? ']'[4])?
+FunctionTypeExpr(5) = FunctionSpec[0!] TupleTypeExpr[1] ('->'[2] TypeExpr[3E])? FnModifierList?[4]
+FunctionSpec(5) = 'fn'[0!] ('['[1] '1'[2] ('+'[3] | '?'[3])? ']'[4])?
 
-TupleTypeExpr(*) = '('[0] TupleArg*[*] ')'[?]
+TupleTypeExpr(*) = '('[0!] TypeExpr*[*E] ')'[?]
 TypeArg(2) = TypeExpr[0E] ','?[1]
 
 Expr := BlocklessExpr | BlockExpr
 BlocklessExpr := SimpleExpr | AssignExpr
-AssignExpr(3) = SimpleExpr[0] AssignOp[1] Expr[2]
+AssignExpr(3) = SimpleExpr[0!E] AssignOp[1!] Expr[2!E]
 AssignOp := '=' | '+=' | '-=' | '*=' | '/=';
 BlockExpr :=
    IfExpr
@@ -84,16 +83,16 @@ BlockExpr :=
  | LoopExpr
  | ForExpr
 
-IfExpr(*) = IfClause[0] ElseIfClause*[*] ElseClause?[?]
-IfClause(3) = 'if'[0] SimpleExpr[1E] Block[2]
-ElseIfClause(4) = 'else'[0] 'if'[1] SimpleExpr[2E] Block[3]
-ElseClause(2) = 'else'[0] Block[1]
+IfExpr(*) = IfClause[0!] ElseIfClause*[*] ElseClause?[?]
+IfClause(3) = 'if'[0!] SimpleExpr[1!E] Block[2]
+ElseIfClause(4) = 'else'[0!] 'if'[1] SimpleExpr[2!E] Block[3]
+ElseClause(2) = 'else'[0!] Block[1]
 
-WhileExpr(3) = 'while'[0] SimpleExpr[1E] Block[2]
-LoopExpr(2) = 'loop'[0] Block[1]
-ForExpr(5) = 'for'[0] VarDef[1!] 'in'[2] SimpleExpr[3E] Block[4]
+WhileExpr(3) = 'while'[0!] SimpleExpr[1!E] Block[2]
+LoopExpr(2) = 'loop'[0!] Block[1]
+ForExpr(5) = 'for'[0!] VarDef[1!] 'in'[2] SimpleExpr[3!E] Block[4]
 
-SimpleExpr = <Pratt Parser> (BinaryExpr(3) = UnaryExpr[0E] BinaryOp[1!] UnaryExpr[2E])
+SimpleExpr = <Pratt Parser> (BinaryExpr(3) = UnaryExpr[0!E] BinaryOp[1!] UnaryExpr[2!E])
     L\R| * / % + - | > >= < <= == != | and or | |>
     ---|-----------|-----------------|--------|----
     *  | L L L L L | L L  L L  L  L  |  L  L  | L
@@ -119,14 +118,14 @@ PostfixExpr :=
  | CallExpr
  | IndexExpr
 
-DotExpr(3) = PostfixExpr[0E] '.'[1] 'IDENT'[2]
-CallExpr(3) = PostfixExpr[0E] ArgList?[1] LambdaExpr?[2]
-ArgList(*) = '('[0] Arg*[*] ')'[?]
-Arg(2) = Expr[0!] ','?[1]
-LambdaExpr(2) = LambdaParamList[0] Block[1]
-LambdaParamList(*) = '|'[0] LambdaParam*[*] '|'[?]
-LambdaParam(4) = 'IDENT'[0] (':'[1] 'var'?[2] Type[3E])?
-IndexExpr(4) = PostfixExpr[0E] '['[1] Expr[2E] ']'[3]
+DotExpr(3) = PostfixExpr[0!E] '.'[!1] 'IDENT'[2]
+CallExpr(3) = PostfixExpr[0!E] ArgList?[1] LambdaExpr?[2]
+ArgList(*) = '('[0!] Arg*[*!E] ')'[?]
+Arg(2) = Expr[0!E] ','?[1]
+LambdaExpr(2) = LambdaParamList[0!] Block[1]
+LambdaParamList(*) = '|'[0!] LambdaParam*[*!E] '|'[?]
+LambdaParam(4) = 'IDENT'[0!] (':'[1] 'var'?[2] Type[3E])?
+IndexExpr(4) = PostfixExpr[0!E] '['[1!] Expr[2!E] ']'[3]
 
 
 DelimetedExpr :=
@@ -143,8 +142,8 @@ LiteralExpr(1) = // everything is [0]
  | 'CHAR'
  | 'true'
  | 'false'
-VarExpr(1) = 'IDENT'[0]
-ParenExpr(3) = '('[0] Expr[1] ')'[2]
+VarExpr(1) = 'IDENT'[0!]
+ParenExpr(3) = '('[0!] Expr[1!E] ')'[2]
 UnaryExpr(2) = UnaryOp[0!] PostfixExpr[1]
 UnaryOp := '+' | '-' | 'not'
 

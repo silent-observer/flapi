@@ -46,8 +46,12 @@ static inline SourceSpan combineSourceSpans(SourceSpan a, SourceSpan b) {
 
 static inline void extendSourceSpan(SourceSpan *a, SourceSpan *b) {
     assert(cmpSourcePoint(a->start, a->end) <= 0);
-    assert(cmpSourcePoint(a->end, b->start) <= 0);
     assert(cmpSourcePoint(b->start, b->end) <= 0);
+
+    if (memcmp(b, &EMPTY_SPAN, sizeof(SourceSpan)) == 0)
+        return;
+
+    assert(cmpSourcePoint(a->end, b->start) <= 0);
     if (memcmp(a, &EMPTY_SPAN, sizeof(SourceSpan)) == 0)
         a->start = b->start;
     a->end = b->end;

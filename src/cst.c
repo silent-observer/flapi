@@ -234,6 +234,11 @@ static void printNode(CstNodePrinter *p, CstNode *n) {
     if (isMultiline)
         p->currentIdent++;
 
+    if (childrenCount == 0) {
+        cstr_append(&p->out, ")");
+        return;
+    }
+
     c_foreach(it, CstChildren, n->children) {
         if (isMultiline) {
             cstr_append(&p->out, "\n");

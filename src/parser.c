@@ -123,6 +123,18 @@ static void advanceWithError(Parser *parser, const char *error) {
     closeEvent(parser, o, CST_ERROR);
 }
 
+static void skipWithError(Parser *parser, const char *error) {
+    OpenIndex o = openEvent(parser);
+    ParserErrorVec_push(
+        &parser->errors,
+        (ParserError){
+            .kind = PARSER_ERROR_MSG,
+            .msg = error,
+            .got = &parser->tokens[parser->pos],
+        });
+    closeEvent(parser, o, CST_ERROR);
+}
+
 typedef enum {
     RIGHT_TIGTER,
     LEFT_TIGTER,
@@ -153,7 +165,6 @@ static void parseTypeExpr(Parser *p);
 static void parseGenericParamName(Parser *p);
 static void parseCustomTypeExpr(Parser *p);
 static void parseGenericArgList(Parser *p);
-static void parseGenericArg(Parser *p);
 static void parseFunctionTypeExpr(Parser *p);
 static void parseFunctionSpec(Parser *p);
 static void parseTupleTypeExpr(Parser *p);
@@ -183,7 +194,7 @@ static void parseLambdaParamList(Parser *p);
 static void parseLambdaParam(Parser *p);
 static ClosedIndex parseIndexOp(Parser *p, ClosedIndex lhs);
 
-// Program(*) = Definition*[*E]
+// Program(*) = Definition*[*!E]
 // Definition :=
 //   FnDef
 // | StructDef (TODO)
@@ -201,7 +212,7 @@ static void parseProgram(Parser *p) {
     closeEvent(p, o, CST_PROGRAM);
 }
 
-// FnDef(7) = 'def'[0] 'IDENT'[1] FnParamList[2]
+// FnDef(7) = 'def'[0!] 'IDENT'[1] FnParamList[2]
 //            ('->'[3] TypeExpr[4E])?
 //            FnModifierList?[5] Block[6]
 static void parseFnDef(Parser *p) {
@@ -239,7 +250,7 @@ static const KindBitset FN_PARAM_LIST_RECOVERY =
     KB(TOKEN_K_IF) | KB(TOKEN_K_ELSE) | KB(TOKEN_K_LET) |
     KB(TOKEN_K_WHILE) | KB(TOKEN_K_FOR) | KB(TOKEN_K_DEF) |
     KB(TOKEN_K_RETURN) | KB(TOKEN_K_BREAK) | KB(TOKEN_K_CONTINUE);
-// FnParamList(*) = '('[0] FnParam*[*] ')'[?]
+// FnParamList(*) = '('[0!] FnParam*[*!E] ')'[?]
 static void parseFnParamList(Parser *p) {
     assert(at(p, TOKEN_LPAREN));
     OpenIndex o = openEvent(p);
@@ -259,7 +270,7 @@ static void parseFnParamList(Parser *p) {
     closeEvent(p, o, CST_FN_PARAM_LIST);
 }
 
-// FnParam(5) = 'IDENT'[0] ':'[1] 'var'?[2] TypeExpr[3E] ','?[4]
+// FnParam(5) = 'IDENT'[0!] ':'[1] 'var'?[2] TypeExpr[3!E] ','?[4]
 static void parseFnParam(Parser *p) {
     assert(at(p, TOKEN_IDENT));
     OpenIndex o = openEvent(p);
@@ -280,7 +291,7 @@ static void parseFnParam(Parser *p) {
     closeEvent(p, o, CST_FN_PARAM);
 }
 
-// FnModifierList(*) = FnModifier+[*]
+// FnModifierList(*) = FnModifier+[*!]
 static void parseFnModifierList(Parser *p) {
     OpenIndex o = openEvent(p);
 
@@ -317,7 +328,7 @@ static const KindBitset EXPR_FIRST =
 
 static const KindBitset FN_MODIFIER_LIST_RECOVERY = FN_PARAM_LIST_RECOVERY;
 
-// GivenModifier(*) = 'given'[0] '('[1] ImplicitClause+[*] ')'[?]
+// GivenModifier(*) = 'given'[0!] '('[1] ImplicitClause+[*!E] ')'[?]
 static void
 parseGivenModifier(Parser *p) {
     assert(at(p, TOKEN_K_GIVEN));
@@ -339,7 +350,7 @@ parseGivenModifier(Parser *p) {
     closeEvent(p, o, CST_GIVEN_MODIFIER);
 }
 
-// WithModifier(*) = 'with'[0] '('[1] ImplicitClause+[*] ')'[?]
+// WithModifier(*) = 'with'[0!] '('[1] ImplicitClause+[*!E] ')'[?]
 static void parseWithModifier(Parser *p) {
     assert(at(p, TOKEN_K_WITH));
     OpenIndex o = openEvent(p);
@@ -360,7 +371,7 @@ static void parseWithModifier(Parser *p) {
     closeEvent(p, o, CST_WITH_MODIFIER);
 }
 
-// ImplicitClause(*) = ('IDENT'[0] ':'[1])? TypeExpr[2E] ','?[3]
+// ImplicitClause(*) = ('IDENT'[0] ':'[1])? TypeExpr[2!E] ','?[3]
 static void parseImplicitClause(Parser *p) {
     assert(at_any(p, TYPE_EXPR_FIRST));
     OpenIndex o = openEvent(p);
@@ -383,7 +394,7 @@ static void parseImplicitClause(Parser *p) {
 
 static const KindBitset BLOCK_RECOVERY = KB(TOKEN_K_DEF);
 
-// Block(*) = '{'[0] Statement+[*E] '}'[?]
+// Block(*) = '{'[0!] Statement+[*!E] '}'[?]
 // Statement :=
 //    ExprStmt
 //  | LetStmt
@@ -433,7 +444,7 @@ static void parseBlock(Parser *p) {
     closeEvent(p, o, CST_BLOCK);
 }
 
-// LetStmt(5) = 'let'[0] VarDef[1!] '='[2] Expr[3] ';'[4]
+// LetStmt(5) = 'let'[0!] VarDef[1!] '='[2] Expr[3E] ';'[4]
 static void parseLetStmt(Parser *p) {
     assert(at(p, TOKEN_K_LET));
     OpenIndex o = openEvent(p);
@@ -452,7 +463,7 @@ static void parseLetStmt(Parser *p) {
     closeEvent(p, o, CST_LET_STMT);
 }
 
-// VarStmt(5) = 'var'[0] VarDef[1!] '='[2] Expr[3] ';'[4]
+// VarStmt(5) = 'var'[0!] VarDef[1!] '='[2] Expr[3E] ';'[4]
 static void parseVarStmt(Parser *p) {
     assert(at(p, TOKEN_K_VAR));
     OpenIndex o = openEvent(p);
@@ -471,7 +482,7 @@ static void parseVarStmt(Parser *p) {
     closeEvent(p, o, CST_VAR_STMT);
 }
 
-// WithStmt(5) = 'with'[0] VarDef[1!] '='[2] Expr[3] ';'[4]
+// WithStmt(5) = 'with'[0!] VarDef[1!] '='[2] Expr[3E] ';'[4]
 static void parseWithStmt(Parser *p) {
     assert(at(p, TOKEN_K_WITH));
     OpenIndex o = openEvent(p);
@@ -503,7 +514,7 @@ static void parseVarDef(Parser *p) {
     closeEvent(p, o, CST_VAR_DEF);
 }
 
-// ReturnStmt(3) = 'return'[0] Expr?[1] ';'[2]
+// ReturnStmt(3) = 'return'[0!] Expr?[1E] ';'[2]
 static void parseReturnStmt(Parser *p) {
     assert(at(p, TOKEN_K_RETURN));
     OpenIndex o = openEvent(p);
@@ -520,7 +531,7 @@ static void parseReturnStmt(Parser *p) {
     closeEvent(p, o, CST_RETURN_STMT);
 }
 
-// BreakStmt(3) = 'break'[0] Expr?[1] ';'[2]
+// BreakStmt(3) = 'break'[0!] Expr?[1E] ';'[2]
 static void parseBreakStmt(Parser *p) {
     assert(at(p, TOKEN_K_BREAK));
     OpenIndex o = openEvent(p);
@@ -537,7 +548,7 @@ static void parseBreakStmt(Parser *p) {
     closeEvent(p, o, CST_BREAK_STMT);
 }
 
-// ContinueStmt(2) = 'continue'[0] ';'[1]
+// ContinueStmt(2) = 'continue'[0!] ';'[1]
 static void parseContinueStmt(Parser *p) {
     assert(at(p, TOKEN_K_CONTINUE));
     OpenIndex o = openEvent(p);
@@ -618,19 +629,12 @@ static void parseTypeExpr(Parser *p) {
             parseTupleTypeExpr(p);
             break;
         default:
-            ParserErrorVec_push(
-                &p->errors,
-                (ParserError){
-                    .kind = PARSER_ERROR_MSG,
-                    .msg = "Expected a type",
-                    .got = &p->tokens[p->pos],
-                });
-            skip(p);
+            skipWithError(p, "Expected a type");
             return;
     }
 }
 
-// GenericParamName(2) = '%'[0] 'IDENT'[1]
+// GenericParamName(2) = '%'[0!] 'IDENT'[1]
 static void parseGenericParamName(Parser *p) {
     assert(at(p, TOKEN_PERCENT));
     OpenIndex o = openEvent(p);
@@ -641,7 +645,7 @@ static void parseGenericParamName(Parser *p) {
     closeEvent(p, o, CST_GENERIC_PARAM_NAME);
 }
 
-// CustomTypeExpr(2) = 'IDENT'[0] GenericArgList?[1]
+// CustomTypeExpr(2) = 'IDENT'[0!] GenericArgList?[1]
 static void parseCustomTypeExpr(Parser *p) {
     assert(at(p, TOKEN_IDENT));
     OpenIndex o = openEvent(p);
@@ -657,7 +661,7 @@ static void parseCustomTypeExpr(Parser *p) {
 
 static const KindBitset GENERIC_ARG_LIST_RECOVERY = FN_PARAM_LIST_RECOVERY;
 
-// GenericArgList(*) = '['[0] GenericArg+[*] ']'[?]
+// GenericArgList(*) = '['[0!] TypeArg+[*!E] ']'[?]
 static void parseGenericArgList(Parser *p) {
     assert(at(p, TOKEN_LBRACK));
     OpenIndex o = openEvent(p);
@@ -665,7 +669,7 @@ static void parseGenericArgList(Parser *p) {
     expect(p, TOKEN_LBRACK); // 0
     while (!at(p, TOKEN_RBRACK) && !at(p, TOKEN_EOF)) {
         if (at_any(p, TYPE_EXPR_FIRST))
-            parseGenericArg(p); // *
+            parseTypeArg(p); // *
         else {
             if (at_any(p, GENERIC_ARG_LIST_RECOVERY))
                 break;
@@ -677,28 +681,8 @@ static void parseGenericArgList(Parser *p) {
     closeEvent(p, o, CST_GENERIC_ARG_LIST);
 }
 
-// GenericArg(4) = (GenericParamName[0] '='[1])? TypeExpr[2E] ','?[3]
-static void parseGenericArg(Parser *p) {
-    OpenIndex o = openEvent(p);
-
-    if (at(p, TOKEN_PERCENT)) {
-        parseGenericParamName(p); // 0
-        expect(p, TOKEN_EQUAL);   // 1
-    } else {
-        skip(p); // 0
-        skip(p); // 1
-    }
-    parseTypeExpr(p); // 2
-    if (!at(p, TOKEN_RBRACK))
-        expect(p, TOKEN_COMMA); // 3
-    else
-        skip(p); // 3
-
-    closeEvent(p, o, CST_GENERIC_ARG);
-}
-
 // FunctionTypeExpr(5) = FunctionSpec[0!] TupleTypeExpr[1]
-//                       ('->'[2] TypeExpr[3])? FnModifierList?[4]
+//                       ('->'[2] TypeExpr[3E])? FnModifierList?[4]
 static void parseFunctionTypeExpr(Parser *p) {
     assert(at(p, TOKEN_K_FN));
     OpenIndex o = openEvent(p);
@@ -722,7 +706,7 @@ static void parseFunctionTypeExpr(Parser *p) {
     closeEvent(p, o, CST_FUNCTION_TYPE_EXPR);
 }
 
-// FunctionSpec(5) = 'fn'[0] ('['[1] '1'[2] ('+'[3] | '?'[3])? ']'[4])?
+// FunctionSpec(5) = 'fn'[0!] ('['[1] '1'[2] ('+'[3] | '?'[3])? ']'[4])?
 static void parseFunctionSpec(Parser *p) {
     assert(at(p, TOKEN_K_FN));
     OpenIndex o = openEvent(p);
@@ -746,7 +730,7 @@ static void parseFunctionSpec(Parser *p) {
     closeEvent(p, o, CST_FUNCTION_SPEC);
 }
 
-// TupleTypeExpr(*) = '('[0] TupleArg*[*] ')'[?]
+// TupleTypeExpr(*) = '('[0!] TupleArg*[*!E] ')'[?]
 static void parseTupleTypeExpr(Parser *p) {
     assert(at(p, TOKEN_LPAREN));
     OpenIndex o = openEvent(p);
@@ -788,7 +772,7 @@ static void parseExpr(Parser *p) {
 }
 
 // BlocklessExpr := SimpleExpr | AssignExpr
-// AssignExpr(3) = SimpleExpr[0E] AssignOp[1!] Expr[2E]
+// AssignExpr(3) = SimpleExpr[0!E] AssignOp[1!] Expr[2!E]
 // AssignOp := '=' | '+=' | '-=' | '*=' | '/=';
 static void parseBlocklessExpr(Parser *p) {
     ClosedIndex c = parseSimpleExpr(p); // 0
@@ -848,7 +832,7 @@ static void parseIfExpr(Parser *p) {
     closeEvent(p, o, CST_IF_EXPR);
 }
 
-// IfClause(3) = 'if'[0] SimpleExpr[1E] Block[2]
+// IfClause(3) = 'if'[0] SimpleExpr[1!E] Block[2]
 static void parseIfClause(Parser *p) {
     assert(at(p, TOKEN_K_IF));
     OpenIndex o = openEvent(p);
@@ -863,7 +847,7 @@ static void parseIfClause(Parser *p) {
     closeEvent(p, o, CST_IF_CLAUSE);
 }
 
-// ElseIfClause(4) = 'else'[0] 'if'[1] SimpleExpr[2E] Block[3]
+// ElseIfClause(4) = 'else'[0!] 'if'[1] SimpleExpr[2!E] Block[3]
 static void parseElseIfClause(Parser *p) {
     assert(at(p, TOKEN_K_ELSE) && nth(p, 1) == TOKEN_K_IF);
     OpenIndex o = openEvent(p);
@@ -879,7 +863,7 @@ static void parseElseIfClause(Parser *p) {
     closeEvent(p, o, CST_ELSE_IF_CLAUSE);
 }
 
-// ElseClause(2) = 'else'[0] Block[1]
+// ElseClause(2) = 'else'[0!] Block[1]
 static void parseElseClause(Parser *p) {
     assert(at(p, TOKEN_K_ELSE));
     OpenIndex o = openEvent(p);
@@ -893,7 +877,7 @@ static void parseElseClause(Parser *p) {
     closeEvent(p, o, CST_ELSE_CLAUSE);
 }
 
-// WhileExpr(3) = 'while'[0] SimpleExpr[1E] Block[2]
+// WhileExpr(3) = 'while'[0!] SimpleExpr[1!E] Block[2]
 static void parseWhileExpr(Parser *p) {
     assert(at(p, TOKEN_K_WHILE));
     OpenIndex o = openEvent(p);
@@ -908,7 +892,7 @@ static void parseWhileExpr(Parser *p) {
     closeEvent(p, o, CST_WHILE_EXPR);
 }
 
-// LoopExpr(2) = 'loop'[0] Block[1]
+// LoopExpr(2) = 'loop'[0!] Block[1]
 static void parseLoopExpr(Parser *p) {
     assert(at(p, TOKEN_K_LOOP));
     OpenIndex o = openEvent(p);
@@ -922,7 +906,7 @@ static void parseLoopExpr(Parser *p) {
     closeEvent(p, o, CST_LOOP_EXPR);
 }
 
-// ForExpr(5) = 'for'[0] VarDef[1!] 'in'[2] SimpleExpr[3E] Block[4]
+// ForExpr(5) = 'for'[0!] VarDef[1!] 'in'[2] SimpleExpr[3!E] Block[4]
 static void parseForExpr(Parser *p) {
     assert(at(p, TOKEN_K_FOR));
     OpenIndex o = openEvent(p);
@@ -959,8 +943,8 @@ static ClosedIndex parseSimpleExpr(Parser *p) {
 //  | 'CHAR'
 //  | 'true'
 //  | 'false'
-// VarExpr(1) = 'IDENT'[0]
-// ParenExpr(3) = '('[0] Expr[1E] ')'[2]
+// VarExpr(1) = 'IDENT'[0!]
+// ParenExpr(3) = '('[0!] Expr[1!E] ')'[2]
 static ClosedIndex parseDelimetedExpr(Parser *p) {
     OpenIndex o = openEvent(p);
     switch (nth(p, 0)) {
@@ -1003,7 +987,7 @@ static ClosedIndex parseDelimetedExpr(Parser *p) {
 //  | DotExpr
 //  | CallExpr
 //  | IndexExpr
-// BinaryExpr(3) = UnaryExpr[0] BinaryOp[1] UnaryExpr[2]
+// BinaryExpr(3) = UnaryExpr[0!E] BinaryOp[1!] UnaryExpr[2!E]
 static ClosedIndex parsePrattExpr(Parser *p, TokenKind left) {
     ClosedIndex lhs = parseDelimetedExpr(p); // 0
 
@@ -1134,15 +1118,16 @@ static BindingPrecedence bindingPrecedence(TokenKind left, TokenKind right) {
         assert(false);
 }
 
-// DotExpr(3) = PostfixExpr[0E] '.'[1] 'IDENT'[2]
+// DotExpr(3) = PostfixExpr[0!E] '.'[!1] 'IDENT'[2]
 static ClosedIndex parseDotOp(Parser *p, ClosedIndex lhs) {
+    assert(at(p, TOKEN_DOT));
     OpenIndex o = openBeforeEvent(p, lhs); // 0
     advance(p);                            // 1
     expect(p, TOKEN_IDENT);                // 2
     return closeEvent(p, o, CST_DOT_EXPR);
 }
 
-// CallExpr(3) = PostfixExpr[0E] ArgList?[1] LambdaExpr?[2]
+// CallExpr(3) = PostfixExpr[0!E] ArgList?[1] LambdaExpr?[2]
 static ClosedIndex parseCallOp(Parser *p, ClosedIndex lhs) {
     assert(at(p, TOKEN_LPAREN) || at(p, TOKEN_PIPE));
     OpenIndex o = openBeforeEvent(p, lhs); // 0
@@ -1159,7 +1144,7 @@ static ClosedIndex parseCallOp(Parser *p, ClosedIndex lhs) {
 
 static const KindBitset ARG_LIST_RECOVERY = FN_PARAM_LIST_RECOVERY;
 
-// ArgList(*) = '('[0] Arg*[*] ')'[?]
+// ArgList(*) = '('[0!] Arg*[*!E] ')'[?]
 static void parseArgList(Parser *p) {
     assert(at(p, TOKEN_LPAREN));
     OpenIndex o = openEvent(p);
@@ -1179,7 +1164,7 @@ static void parseArgList(Parser *p) {
     closeEvent(p, o, CST_ARG_LIST);
 }
 
-// Arg(2) = Expr[0!] ','?[1]
+// Arg(2) = Expr[0!E] ','?[1]
 static void parseArg(Parser *p) {
     OpenIndex o = openEvent(p);
     parseExpr(p); // 0
@@ -1204,27 +1189,27 @@ static ClosedIndex parseLambdaExpr(Parser *p) {
     return closeEvent(p, o, CST_LAMBDA_EXPR);
 }
 
-// LambdaParamList(*) = '|'[0] LambdaParam*[*] '|'[?]
+// LambdaParamList(*) = '|'[0!] LambdaParam*[*!E] '|'[?]
 static void parseLambdaParamList(Parser *p) {
     assert(at(p, TOKEN_PIPE));
     OpenIndex o = openEvent(p);
     expect(p, TOKEN_PIPE); // 0
     while (!at(p, TOKEN_PIPE) && !at(p, TOKEN_EOF)) {
         if (at(p, TOKEN_IDENT))
-            parseArg(p); // *
+            parseLambdaParam(p); // *
         else {
             if (at_any(p, FN_PARAM_LIST_RECOVERY))
                 break;
             advanceWithError(p, "Expected a parameter for the lambda function");
         }
-        parseLambdaParam(p); // *
     }
     expect(p, TOKEN_PIPE); // ?
     closeEvent(p, o, CST_LAMBDA_PARAM_LIST);
 }
 
-// LambdaParam(4) = 'IDENT'[0] (':'[1] 'var'?[2] Type[3E])?
+// LambdaParam(4) = 'IDENT'[0!] (':'[1] 'var'?[2] Type[3E])?
 static void parseLambdaParam(Parser *p) {
+    assert(at(p, TOKEN_IDENT));
     OpenIndex o = openEvent(p);
     expect(p, TOKEN_IDENT); // 0
     if (at(p, TOKEN_COLON)) {
@@ -1243,7 +1228,7 @@ static void parseLambdaParam(Parser *p) {
     closeEvent(p, o, CST_LAMBDA_PARAM);
 }
 
-// IndexExpr(4) = PostfixExpr[0] '['[1] Expr[2E] ']'[3]
+// IndexExpr(4) = PostfixExpr[0!E] '['[1!] Expr[2!E] ']'[3]
 static ClosedIndex parseIndexOp(Parser *p, ClosedIndex lhs) {
     assert(at(p, TOKEN_LBRACK));
     OpenIndex o = openBeforeEvent(p, lhs); // 0

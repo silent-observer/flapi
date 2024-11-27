@@ -15,7 +15,7 @@
         [Ident b]
         _
         _
-        _
+        (Error)
         _
       )
       _
@@ -46,14 +46,14 @@
         [Ident a]
         _
         _
-        _
+        (Error)
         [Comma]
       )
       (FnParam
         [Ident b]
         _
         _
-        _
+        (Error)
         _
       )
       [RParen]
@@ -84,7 +84,7 @@
         [Ident a]
         _
         _
-        _
+        (Error)
         [Comma]
       )
       (FnParam
