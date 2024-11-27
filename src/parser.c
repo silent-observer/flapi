@@ -434,11 +434,12 @@ static void parseBlock(Parser *p) {
                     parseExprStmt(p); // *
                 else {
                     if (at_any(p, BLOCK_RECOVERY))
-                        break;
+                        goto exit;
                     advanceWithError(p, "Expected a statement");
                 }
         }
     }
+exit:
     expect(p, TOKEN_RCURLY); // ?
 
     closeEvent(p, o, CST_BLOCK);
