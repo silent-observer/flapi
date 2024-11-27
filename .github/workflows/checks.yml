@@ -1,0 +1,44 @@
+name: Run checks on commit
+on: [push]
+jobs:
+  Run-Tests:
+    name: Run main tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: 'latest'
+          actions-cache-folder: .xmake-cache
+      - name: Build project
+        run: |
+          xmake install -y stc
+          xmake f -p linux -m check -y
+          xmake build test
+      - name: Run tests
+        run: xmake run test
+      - name: Upload test outputs
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-outputs
+          path: |
+            tests/code_results/*
+            tests/cst_results/*
+  Format-Check:
+    name: Format check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - 'src'
+          - 'include'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jidicula/clang-format-action@v4.13.0
+        with:
+          clang-format-version: '19'
+          check-path: ${{ matrix.path }}
+
+
