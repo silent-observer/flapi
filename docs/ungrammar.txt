@@ -84,13 +84,13 @@ BlockExpr :=
  | ForExpr
 
 IfExpr(*) = IfClause[0!] ElseIfClause*[*] ElseClause?[?]
-IfClause(3) = 'if'[0!] SimpleExpr[1!E] Block[2]
-ElseIfClause(4) = 'else'[0!] 'if'[1] SimpleExpr[2!E] Block[3]
+IfClause(3) = 'if'[0!] SimpleExpr[1E] Block[2]
+ElseIfClause(4) = 'else'[0!] 'if'[1] SimpleExpr[2E] Block[3]
 ElseClause(2) = 'else'[0!] Block[1]
 
-WhileExpr(3) = 'while'[0!] SimpleExpr[1!E] Block[2]
+WhileExpr(3) = 'while'[0!] SimpleExpr[1E] Block[2]
 LoopExpr(2) = 'loop'[0!] Block[1]
-ForExpr(5) = 'for'[0!] VarDef[1!] 'in'[2] SimpleExpr[3!E] Block[4]
+ForExpr(5) = 'for'[0!] VarDef[1!] 'in'[2] SimpleExpr[3E] Block[4]
 
 SimpleExpr = <Pratt Parser> (BinaryExpr(3) = UnaryExpr[0!E] BinaryOp[1!] UnaryExpr[2!E])
     L\R| * / % + - | > >= < <= == != | and or | |>
@@ -143,7 +143,7 @@ LiteralExpr(1) = // everything is [0]
  | 'true'
  | 'false'
 VarExpr(1) = 'IDENT'[0!]
-ParenExpr(3) = '('[0!] Expr[1!E] ')'[2]
+ParenExpr(3) = '('[0!] Expr[1E] ')'[2]
 UnaryExpr(2) = UnaryOp[0!] PostfixExpr[1]
 UnaryOp := '+' | '-' | 'not'
 

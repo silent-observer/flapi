@@ -110,8 +110,7 @@ static b32 expect(Parser *parser, TokenKind kind) {
     return false;
 }
 
-static void advanceWithError(Parser *parser, const char *error) {
-    OpenIndex o = openEvent(parser);
+static void pushError(Parser *parser, const char *error) {
     ParserErrorVec_push(
         &parser->errors,
         (ParserError){
@@ -119,19 +118,12 @@ static void advanceWithError(Parser *parser, const char *error) {
             .msg = error,
             .got = &parser->tokens[parser->pos],
         });
-    advance(parser);
-    closeEvent(parser, o, CST_ERROR);
 }
 
-static void skipWithError(Parser *parser, const char *error) {
+static void advanceWithError(Parser *parser, const char *error) {
     OpenIndex o = openEvent(parser);
-    ParserErrorVec_push(
-        &parser->errors,
-        (ParserError){
-            .kind = PARSER_ERROR_MSG,
-            .msg = error,
-            .got = &parser->tokens[parser->pos],
-        });
+    pushError(parser, error);
+    advance(parser);
     closeEvent(parser, o, CST_ERROR);
 }
 
@@ -319,12 +311,15 @@ static const KindBitset TYPE_EXPR_FIRST =
     KB(TOKEN_K_U16) | KB(TOKEN_K_U32) | KB(TOKEN_K_U64) |
     KB(TOKEN_K_STR) | KB(TOKEN_K_CHAR) | KB(TOKEN_K_BOOL);
 
-static const KindBitset EXPR_FIRST =
+static const KindBitset SIMPLE_EXPR_FIRST =
     KB(TOKEN_IDENT) | KB(TOKEN_DECIMAL) | KB(TOKEN_BINARY) |
     KB(TOKEN_STRING) | KB(TOKEN_CHAR) | KB(TOKEN_PIPE) |
-    KB(TOKEN_PLUS) | KB(TOKEN_MINUS) | KB(TOKEN_K_NOT) |
-    KB(TOKEN_K_IF) | KB(TOKEN_K_WHILE) | KB(TOKEN_K_LOOP) |
-    KB(TOKEN_K_FOR);
+    KB(TOKEN_PLUS) | KB(TOKEN_MINUS) | KB(TOKEN_K_NOT);
+
+static const KindBitset EXPR_FIRST =
+    SIMPLE_EXPR_FIRST |
+    KB(TOKEN_K_IF) | KB(TOKEN_K_WHILE) |
+    KB(TOKEN_K_LOOP) | KB(TOKEN_K_FOR);
 
 static const KindBitset FN_MODIFIER_LIST_RECOVERY = FN_PARAM_LIST_RECOVERY;
 
@@ -630,8 +625,10 @@ static void parseTypeExpr(Parser *p) {
             parseTupleTypeExpr(p);
             break;
         default:
-            skipWithError(p, "Expected a type");
-            return;
+            OpenIndex o = openEvent(p);
+            pushError(p, "Expected a type");
+            closeEvent(p, o, CST_ERROR);
+            break;
     }
 }
 
@@ -738,7 +735,13 @@ static void parseTupleTypeExpr(Parser *p) {
 
     expect(p, TOKEN_LPAREN); // 0
     while (!at(p, TOKEN_RPAREN) && !at(p, TOKEN_EOF)) {
-        parseTypeArg(p); // *
+        if (at_any(p, TYPE_EXPR_FIRST))
+            parseTypeArg(p); // *
+        else {
+            if (at_any(p, GENERIC_ARG_LIST_RECOVERY))
+                break;
+            advanceWithError(p, "Expected a type inside a tuple type");
+        }
     }
     expect(p, TOKEN_RPAREN); // ?
 
@@ -833,13 +836,17 @@ static void parseIfExpr(Parser *p) {
     closeEvent(p, o, CST_IF_EXPR);
 }
 
-// IfClause(3) = 'if'[0] SimpleExpr[1!E] Block[2]
+// IfClause(3) = 'if'[0!] SimpleExpr[1E] Block[2]
 static void parseIfClause(Parser *p) {
     assert(at(p, TOKEN_K_IF));
     OpenIndex o = openEvent(p);
 
     expect(p, TOKEN_K_IF); // 0
-    parseSimpleExpr(p);    // 1
+    if (at_any(p, SIMPLE_EXPR_FIRST))
+        parseSimpleExpr(p); // 1
+    else
+        skip(p); // 1
+
     if (at(p, TOKEN_LCURLY))
         parseBlock(p); // 2
     else
@@ -848,14 +855,18 @@ static void parseIfClause(Parser *p) {
     closeEvent(p, o, CST_IF_CLAUSE);
 }
 
-// ElseIfClause(4) = 'else'[0!] 'if'[1] SimpleExpr[2!E] Block[3]
+// ElseIfClause(4) = 'else'[0!] 'if'[1] SimpleExpr[2E] Block[3]
 static void parseElseIfClause(Parser *p) {
     assert(at(p, TOKEN_K_ELSE) && nth(p, 1) == TOKEN_K_IF);
     OpenIndex o = openEvent(p);
 
     expect(p, TOKEN_K_ELSE); // 0
     expect(p, TOKEN_K_IF);   // 1
-    parseSimpleExpr(p);      // 2
+    if (at_any(p, SIMPLE_EXPR_FIRST))
+        parseSimpleExpr(p); // 2
+    else
+        skip(p); // 2
+
     if (at(p, TOKEN_LCURLY))
         parseBlock(p); // 3
     else
@@ -878,13 +889,17 @@ static void parseElseClause(Parser *p) {
     closeEvent(p, o, CST_ELSE_CLAUSE);
 }
 
-// WhileExpr(3) = 'while'[0!] SimpleExpr[1!E] Block[2]
+// WhileExpr(3) = 'while'[0!] SimpleExpr[1E] Block[2]
 static void parseWhileExpr(Parser *p) {
     assert(at(p, TOKEN_K_WHILE));
     OpenIndex o = openEvent(p);
 
     expect(p, TOKEN_K_WHILE); // 0
-    parseSimpleExpr(p);       // 1
+    if (at_any(p, SIMPLE_EXPR_FIRST))
+        parseSimpleExpr(p); // 1
+    else
+        skip(p); // 1
+
     if (at(p, TOKEN_LCURLY))
         parseBlock(p); // 2
     else
@@ -907,17 +922,22 @@ static void parseLoopExpr(Parser *p) {
     closeEvent(p, o, CST_LOOP_EXPR);
 }
 
-// ForExpr(5) = 'for'[0!] VarDef[1!] 'in'[2] SimpleExpr[3!E] Block[4]
+// ForExpr(5) = 'for'[0!] VarDef[1!] 'in'[2] SimpleExpr[3E] Block[4]
 static void parseForExpr(Parser *p) {
     assert(at(p, TOKEN_K_FOR));
     OpenIndex o = openEvent(p);
 
-    expect(p, TOKEN_K_FOR);
-    parseVarDef(p);
-    expect(p, TOKEN_K_IN);
-    parseSimpleExpr(p);
+    expect(p, TOKEN_K_FOR); // 0
+    parseVarDef(p);         // 1
+    expect(p, TOKEN_K_IN);  // 2
+    if (at_any(p, SIMPLE_EXPR_FIRST))
+        parseSimpleExpr(p); // 3
+    else
+        skip(p); // 3
     if (at(p, TOKEN_LCURLY))
-        parseBlock(p);
+        parseBlock(p); // 4
+    else
+        skip(p); // 4
 
     closeEvent(p, o, CST_FOR_EXPR);
 }
@@ -945,7 +965,7 @@ static ClosedIndex parseSimpleExpr(Parser *p) {
 //  | 'true'
 //  | 'false'
 // VarExpr(1) = 'IDENT'[0!]
-// ParenExpr(3) = '('[0!] Expr[1!E] ')'[2]
+// ParenExpr(3) = '('[0!] Expr[1E] ')'[2]
 static ClosedIndex parseDelimetedExpr(Parser *p) {
     OpenIndex o = openEvent(p);
     switch (nth(p, 0)) {
@@ -963,8 +983,13 @@ static ClosedIndex parseDelimetedExpr(Parser *p) {
             return closeEvent(p, o, CST_VAR_EXPR);
 
         case TOKEN_LPAREN:
-            advance(p);              // 0
-            parseExpr(p);            // 1
+            advance(p); // 0
+
+            if (at_any(p, EXPR_FIRST))
+                parseExpr(p); // 1
+            else
+                skip(p); // 1
+
             expect(p, TOKEN_RPAREN); // 2
             return closeEvent(p, o, CST_PAREN_EXPR);
 
@@ -978,7 +1003,7 @@ static ClosedIndex parseDelimetedExpr(Parser *p) {
         case TOKEN_PIPE:
             return parseLambdaExpr(p);
         default:
-            advanceWithError(p, "Expected an expression");
+            pushError(p, "Expected an expression");
             return closeEvent(p, o, CST_ERROR);
     }
 }
@@ -1167,6 +1192,7 @@ static void parseArgList(Parser *p) {
 
 // Arg(2) = Expr[0!E] ','?[1]
 static void parseArg(Parser *p) {
+    assert(at_any(p, EXPR_FIRST));
     OpenIndex o = openEvent(p);
     parseExpr(p); // 0
     if (!at(p, TOKEN_RPAREN))
