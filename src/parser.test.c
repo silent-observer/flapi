@@ -42,7 +42,7 @@ int parser_test(void) {
             }
         }
 
-        sprintf(filename, TEST_DIR "/code_results/%s.cst", name);
+        sprintf(filename, TEST_DIR "/parse_results/%s.cst", name);
         writeTextFile(filename, cstr_sv(&cstDump));
         if (!cstr_eq(&expected, &cstDump)) {
             fprintf(stderr, "CST doesn't match: %s\n", name);

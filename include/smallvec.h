@@ -95,6 +95,8 @@ typedef struct {
 } i_iter;
 
 static inline i_iter _c_MEMB(_begin)(i_type *self) {
+    if (self->cap == 0)
+        return (i_iter){.ref = NULL, .end = NULL};
     if (self->cap <= i_N)
         return (i_iter){.ref = &self->data[0], .end = &self->data[self->cap]};
     return (i_iter){.ref = self->ptr, .end = self->ptr + self->len};

@@ -89,6 +89,7 @@ typedef struct {
     union {
         const Token *token;
         CstNode *node;
+        SourcePoint point;
     };
 } CstChild;
 

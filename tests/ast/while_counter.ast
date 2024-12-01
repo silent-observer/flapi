@@ -1,0 +1,53 @@
+Program {
+  fns: [
+    0: FnDef {
+      name: <f@0>
+      params: [
+        0: VarDef <x@1> : i32
+      ]
+      return: ()
+      given: []
+      body: [
+        0: LetStmt {
+          var: VarDef <i@1>
+          mutable: true
+          init: IntLiteralExpr(0)
+        }
+        1: ExprStmt {
+          expr: WhileExpr {
+            cond: BinaryExpr {
+              op: "<="
+              lhs: VarExpr {
+                var: <i@1>
+              }
+              rhs: VarExpr {
+                var: <x@1>
+              }
+            }
+            body: [
+              0: ExprStmt {
+                expr: AssignExpr {
+                  lhs: VarExpr {
+                    var: <i@1>
+                  }
+                  rhs: BinaryExpr {
+                    op: "+"
+                    lhs: VarExpr {
+                      var: <i@1>
+                    }
+                    rhs: IntLiteralExpr(1)
+                  }
+                }
+              }
+            ]
+          }
+        }
+        2: ReturnStmt {
+          expr: VarExpr {
+            var: <i@1>
+          }
+        }
+      ]
+    }
+  ]
+}

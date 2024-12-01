@@ -1,0 +1,40 @@
+Program {
+  fns: [
+    0: FnDef {
+      name: <foo@0>
+      params: [
+        0: VarDef <x@1> : i32
+        1: VarDef <y@1> : i32
+      ]
+      return: ()
+      given: []
+      body: [
+        0: ExprStmt {
+          expr: CallExpr {
+            fn: VarExpr {
+              var: <bar@0>
+            }
+            args: [
+              0: IntLiteralExpr(1)
+            ]
+          }
+        }
+        1: LetStmt {
+          var: VarDef <x@1>
+          mutable: false
+          init: <ERROR>
+        }
+      ]
+    }
+    1: FnDef {
+      name: <bar@0>
+      params: [
+        0: VarDef <a@2> : i32
+        1: VarDef <b@2> : i32
+      ]
+      return: ()
+      given: []
+      body: []
+    }
+  ]
+}

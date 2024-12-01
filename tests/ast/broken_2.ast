@@ -1,0 +1,16 @@
+Program {
+  fns: [
+    0: FnDef {
+      name: <foo@0>
+      params: [
+        0: VarDef <x@1> : i32
+        1: VarDef <y@1> : i32
+      ]
+      return: ()
+      given: []
+      body: [
+        0: ReturnStmt {}
+      ]
+    }
+  ]
+}

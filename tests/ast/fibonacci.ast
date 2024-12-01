@@ -1,0 +1,81 @@
+Program {
+  fns: [
+    0: FnDef {
+      name: <fib@0>
+      params: [
+        0: VarDef <x@1> : i32
+      ]
+      return: ()
+      given: []
+      body: [
+        0: ExprStmt {
+          expr: IfExpr {
+            clauses: [
+              0: IfClause {
+                cond: BinaryExpr {
+                  op: ">="
+                  lhs: VarExpr {
+                    var: <x@1>
+                  }
+                  rhs: IntLiteralExpr(1)
+                }
+                body: [
+                  0: ReturnStmt {
+                    expr: IntLiteralExpr(1)
+                  }
+                ]
+              }
+            ]
+          }
+        }
+        1: LetStmt {
+          var: VarDef <f1@1>
+          mutable: false
+          init: CallExpr {
+            fn: VarExpr {
+              var: <fib@0>
+            }
+            args: [
+              0: BinaryExpr {
+                op: "-"
+                lhs: VarExpr {
+                  var: <x@1>
+                }
+                rhs: IntLiteralExpr(1)
+              }
+            ]
+          }
+        }
+        2: LetStmt {
+          var: VarDef <f2@1>
+          mutable: false
+          init: CallExpr {
+            fn: VarExpr {
+              var: <fib@0>
+            }
+            args: [
+              0: BinaryExpr {
+                op: "-"
+                lhs: VarExpr {
+                  var: <x@1>
+                }
+                rhs: IntLiteralExpr(2)
+              }
+            ]
+          }
+        }
+        3: ReturnStmt {
+          expr: BinaryExpr {
+            op: "+"
+            lhs: VarExpr {
+              var: <f1@1>
+            }
+            rhs: VarExpr {
+              var: <f2@1>
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -26,6 +26,7 @@ typedef enum {
     TYPE_BOOL,
 
     TYPE_NAMED,
+    TYPE_GENERIC,
     TYPE_GENERIC_PARAM,
     TYPE_TUPLE,
 
@@ -60,8 +61,10 @@ TypeId TypeId_simple(TypeKind kind);
 TypeId TypeId_named(TypeKind kind, csview str);
 TypeId TypeId_rec1(TypeKind kind, TypeId arg);
 TypeId TypeId_intern(const Type *t);
-Type *TypeId_lookup(TypeId id);
+const Type *TypeId_lookup(TypeId id);
 void TypeTable_init(void);
 void TypeTable_drop(void);
+
+cstr TypeId_print(TypeId id);
 
 #endif

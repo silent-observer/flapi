@@ -65,13 +65,13 @@ BaseTypeExpr(1) = // everything is [0]
 
 GenericParamName(2) = '%'[0!] 'IDENT'[1]
 CustomTypeExpr(2) = 'IDENT'[0!] GenericArgList?[1]
-GenericArgList(*) = '['[0!] TypeArg+[*] ']'[?]
+GenericArgList(*) = '['[0!] TypeArg+[*!E] ']'[?]
 
 FunctionTypeExpr(5) = FunctionSpec[0!] TupleTypeExpr[1] ('->'[2] TypeExpr[3E])? FnModifierList?[4]
 FunctionSpec(5) = 'fn'[0!] ('['[1] '1'[2] ('+'[3] | '?'[3])? ']'[4])?
 
-TupleTypeExpr(*) = '('[0!] TypeExpr*[*E] ')'[?]
-TypeArg(2) = TypeExpr[0E] ','?[1]
+TupleTypeExpr(*) = '('[0!] TypeArg*[*!E] ')'[?]
+TypeArg(2) = TypeExpr[0!E] ','?[1]
 
 Expr := BlocklessExpr | BlockExpr
 BlocklessExpr := SimpleExpr | AssignExpr
@@ -83,7 +83,7 @@ BlockExpr :=
  | LoopExpr
  | ForExpr
 
-IfExpr(*) = IfClause[0!] ElseIfClause*[*] ElseClause?[?]
+IfExpr(*) = IfClause[0!] ElseIfClause*[*!] ElseClause?[?!]
 IfClause(3) = 'if'[0!] SimpleExpr[1E] Block[2]
 ElseIfClause(4) = 'else'[0!] 'if'[1] SimpleExpr[2E] Block[3]
 ElseClause(2) = 'else'[0!] Block[1]
@@ -144,7 +144,7 @@ LiteralExpr(1) = // everything is [0]
  | 'false'
 VarExpr(1) = 'IDENT'[0!]
 ParenExpr(3) = '('[0!] Expr[1E] ')'[2]
-UnaryExpr(2) = UnaryOp[0!] PostfixExpr[1]
+UnaryExpr(2) = UnaryOp[0!] PostfixExpr[1!]
 UnaryOp := '+' | '-' | 'not'
 
 StructDef(3) = 'struct'[0] CustomTypeExpr[1] StructEntryList[2]

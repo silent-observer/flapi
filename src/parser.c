@@ -728,7 +728,7 @@ static void parseFunctionSpec(Parser *p) {
     closeEvent(p, o, CST_FUNCTION_SPEC);
 }
 
-// TupleTypeExpr(*) = '('[0!] TupleArg*[*!E] ')'[?]
+// TupleTypeExpr(*) = '('[0!] TypeArg*[*!E] ')'[?]
 static void parseTupleTypeExpr(Parser *p) {
     assert(at(p, TOKEN_LPAREN));
     OpenIndex o = openEvent(p);
@@ -748,7 +748,7 @@ static void parseTupleTypeExpr(Parser *p) {
     closeEvent(p, o, CST_TUPLE_TYPE_EXPR);
 }
 
-// TypeArg(2) = TypeExpr[0E] ','?[1]
+// TypeArg(2) = TypeExpr[0!E] ','?[1]
 static void parseTypeArg(Parser *p) {
     OpenIndex o = openEvent(p);
 
@@ -821,7 +821,7 @@ static void parseBlockExpr(Parser *p) {
     }
 }
 
-// IfExpr(*) = IfClause[0!] ElseIfClause*[*] ElseClause?[?]
+// IfExpr(*) = IfClause[0!] ElseIfClause*[*!] ElseClause?[?!]
 static void parseIfExpr(Parser *p) {
     assert(at(p, TOKEN_K_IF));
     OpenIndex o = openEvent(p);
@@ -966,6 +966,8 @@ static ClosedIndex parseSimpleExpr(Parser *p) {
 //  | 'false'
 // VarExpr(1) = 'IDENT'[0!]
 // ParenExpr(3) = '('[0!] Expr[1E] ')'[2]
+// UnaryExpr(2) = UnaryOp[0!] PostfixExpr[1!]
+// UnaryOp := '+' | '-' | 'not'
 static ClosedIndex parseDelimetedExpr(Parser *p) {
     OpenIndex o = openEvent(p);
     switch (nth(p, 0)) {
@@ -996,8 +998,8 @@ static ClosedIndex parseDelimetedExpr(Parser *p) {
         case TOKEN_PLUS:
         case TOKEN_MINUS:
         case TOKEN_K_NOT:
-            advance(p);            // 0
-            parseDelimetedExpr(p); // 1
+            advance(p);                     // 0
+            parsePrattExpr(p, TOKEN_K_NOT); // 1
             return closeEvent(p, o, CST_UNARY_EXPR);
 
         case TOKEN_PIPE:
@@ -1090,7 +1092,7 @@ static b32 isLogic(TokenKind kind) {
 }
 
 static b32 isOp(TokenKind kind) {
-    return isArith(kind) || isComp(kind) || isLogic(kind) || kind == TOKEN_PIPE_ARROW;
+    return isArith(kind) || isComp(kind) || isLogic(kind) || kind == TOKEN_PIPE_ARROW || kind == TOKEN_K_NOT;
 }
 
 static BindingPrecedence bindingPrecedence(TokenKind left, TokenKind right) {
@@ -1099,6 +1101,11 @@ static BindingPrecedence bindingPrecedence(TokenKind left, TokenKind right) {
     if (!isOp(left)) {
         assert(left == TOKEN_EOF);
         return RIGHT_TIGTER;
+    }
+
+    if (left == TOKEN_K_NOT) {
+        assert(right != TOKEN_K_NOT);
+        return LEFT_TIGTER;
     }
 
     if (isArith(left)) {
@@ -1324,7 +1331,10 @@ static Cst buildCst(Parser *p) {
 
                 CstChildren_push(
                     &parentNode->children,
-                    (CstChild){.kind = CST_CHILD_NONE});
+                    (CstChild){
+                        .kind = CST_CHILD_NONE,
+                        .point = parentNode->span.end,
+                    });
                 break;
             }
             default:

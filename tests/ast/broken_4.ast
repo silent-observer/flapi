@@ -1,0 +1,81 @@
+Program {
+  fns: [
+    0: FnDef {
+      name: <foo@0>
+      params: []
+      return: ()
+      given: []
+      body: [
+        0: ExprStmt {
+          expr: IfExpr {
+            clauses: [
+              0: IfClause {
+                cond: <ERROR>
+                body: [
+                  0: ReturnStmt {
+                    expr: IntLiteralExpr(10)
+                  }
+                ]
+              }
+            ]
+          }
+        }
+        1: ExprStmt {
+          expr: IfExpr {
+            clauses: [
+              0: IfClause {
+                cond: BinaryExpr {
+                  op: "<"
+                  lhs: IntLiteralExpr(5)
+                  rhs: IntLiteralExpr(10)
+                }
+                body: [
+                  0: ReturnStmt {
+                    expr: IntLiteralExpr(20)
+                  }
+                ]
+              }
+              1: IfClause {
+                cond: <ERROR>
+                body: [
+                  0: ReturnStmt {
+                    expr: IntLiteralExpr(30)
+                  }
+                ]
+              }
+            ]
+          }
+        }
+        2: ExprStmt {
+          expr: WhileExpr {
+            cond: <ERROR>
+            body: [
+              0: ReturnStmt {
+                expr: IntLiteralExpr(40)
+              }
+            ]
+          }
+        }
+        3: ExprStmt {
+          expr: WhileExpr {
+            cond: BinaryExpr {
+              op: "<"
+              lhs: IntLiteralExpr(5)
+              rhs: IntLiteralExpr(10)
+            }
+            body: [
+              0: ReturnStmt {
+                expr: IntLiteralExpr(50)
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+
+------ ERRORS ------
+Syntax error at (2:7): expected a condition
+Syntax error at (8:12): expected a condition
+Syntax error at (11:10): expected a condition

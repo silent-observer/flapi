@@ -1,0 +1,116 @@
+Program {
+  fns: [
+    0: FnDef {
+      name: <foo@0>
+      params: [
+        0: VarDef <a@1> : i32
+        1: VarDef <b@1>
+      ]
+      return: ()
+      given: []
+      body: [
+        0: ReturnStmt {
+          expr: BinaryExpr {
+            op: "+"
+            lhs: VarExpr {
+              var: <a@1>
+            }
+            rhs: VarExpr {
+              var: <b@1>
+            }
+          }
+        }
+      ]
+    }
+    1: FnDef {
+      name: <bar@0>
+      params: [
+        0: VarDef <a@2>
+        1: VarDef <b@2>
+      ]
+      return: ()
+      given: []
+      body: [
+        0: ReturnStmt {
+          expr: BinaryExpr {
+            op: "+"
+            lhs: VarExpr {
+              var: <a@2>
+            }
+            rhs: VarExpr {
+              var: <b@2>
+            }
+          }
+        }
+      ]
+    }
+    2: FnDef {
+      name: <baz@0>
+      params: [
+        0: VarDef <a@3>
+        1: VarDef <b@3> : i32
+      ]
+      return: ()
+      given: []
+      body: []
+    }
+    3: <ERROR>
+    4: <ERROR>
+    5: <ERROR>
+    6: <ERROR>
+    7: <ERROR>
+    8: FnDef {
+      name: <main@0>
+      params: []
+      return: ()
+      given: []
+      body: [
+        0: ExprStmt {
+          expr: CallExpr {
+            fn: VarExpr {
+              var: <foo@0>
+            }
+            args: [
+              0: IntLiteralExpr(1)
+              1: IntLiteralExpr(2)
+            ]
+          }
+        }
+        1: ExprStmt {
+          expr: CallExpr {
+            fn: VarExpr {
+              var: <bar@0>
+            }
+            args: [
+              0: IntLiteralExpr(3)
+              1: IntLiteralExpr(4)
+            ]
+          }
+        }
+        2: ExprStmt {
+          expr: CallExpr {
+            fn: VarExpr {
+              var: <baz@0>
+            }
+            args: [
+              0: IntLiteralExpr(5)
+              1: IntLiteralExpr(6)
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+
+------ ERRORS ------
+Syntax error at (1:17): function parameters must be declared with explicit types
+Syntax error at (5:9): function parameters must be declared with explicit types
+Syntax error at (5:12): function parameters must be declared with explicit types
+Syntax error at (9:10): function parameters must be declared with explicit types
+Syntax error at (9:20): expected a function body
+Syntax error at (10:5): expected function definition
+Syntax error at (10:12): expected function definition
+Syntax error at (10:13): expected function definition
+Syntax error at (10:14): expected function definition
+Syntax error at (10:15): expected function definition
