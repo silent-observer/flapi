@@ -33,7 +33,7 @@ SymbolId SymbolTable_add(SymbolTable *table, ScopeId scope, csview name) {
         .id = SymbolVec_size(&table->symbols),
         .name = name,
         .scope = scope,
-        .type = TypeId_simple(TYPE_UNKNOWN),
+        .type = TYPEID_UNKNOWN,
     };
     SymbolVec_push(&table->symbols, symbol);
     SymbolMap_insert(&table->scopes.data[scope].map, cstr_from_sv(name), symbol.id);

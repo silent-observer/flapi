@@ -56,15 +56,18 @@ static inline u64 TypeId_hash(TypeId *id) { return *id; }
 #define i_hash TypeId_hash
 #include <stc/hmap.h>
 
-TypeId TypeId_build(const Type *t);
-TypeId TypeId_simple(TypeKind kind);
-TypeId TypeId_named(TypeKind kind, csview str);
-TypeId TypeId_rec1(TypeKind kind, TypeId arg);
-TypeId TypeId_intern(const Type *t);
-const Type *TypeId_lookup(TypeId id);
-void TypeTable_init(void);
-void TypeTable_drop(void);
+TypeId Type_simple(TypeMap *tm, TypeKind kind);
+TypeId Type_named(TypeMap *tm, TypeKind kind, csview str);
+TypeId Type_rec1(TypeMap *tm, TypeKind kind, TypeId arg);
+TypeId Type_intern(TypeMap *tm, const Type *t);
+const Type *Type_lookup(const TypeMap *tm, TypeId id);
 
-cstr TypeId_print(TypeId id);
+TypeMap TypeTable_init(void);
+
+cstr TypeId_print(const TypeMap *tm, TypeId id);
+
+#define TYPEID_UNKNOWN ((TypeId)TYPE_UNKNOWN)
+#define TYPEID_ERROR ((TypeId)TYPE_ERROR)
+#define TYPEID_NONE ((TypeId)TYPE_NONE)
 
 #endif

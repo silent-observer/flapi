@@ -258,6 +258,7 @@ typedef struct {
     AstPool pool;
     AstNode *root;
     SymbolTable symbols;
+    TypeMap types;
 } Ast;
 
 cstr printAst(const Ast *ast);

@@ -1,24 +1,25 @@
 #include "typeid.h"
 
-static TypeMap typeMap = {0};
-static MemCxt typeMapCxt = NULL;
-
-TypeId TypeId_simple(TypeKind kind) {
+TypeId Type_simple(TypeMap *tm, TypeKind kind) {
     Type t = {.kind = kind};
-    return TypeId_intern(&t);
+    return Type_intern(tm, &t);
 }
 
-TypeId TypeId_named(TypeKind kind, csview str) {
+TypeId Type_named(TypeMap *tm, TypeKind kind, csview str) {
     Type t = {.kind = kind, .str = cstr_from_sv(str)};
-    return TypeId_intern(&t);
+    return Type_intern(tm, &t);
 }
-TypeId TypeId_rec1(TypeKind kind, TypeId arg) {
+TypeId Type_rec1(TypeMap *tm, TypeKind kind, TypeId arg) {
     Type t = {.kind = kind};
     TypeChildren_push(&t.children, arg);
-    return TypeId_intern(&t);
+    return Type_intern(tm, &t);
 }
 
-TypeId TypeId_build(const Type *t) {
+static TypeId TypeId_build(const Type *t) {
+    if (t->kind == TYPE_UNKNOWN || t->kind == TYPE_ERROR || t->kind == TYPE_NONE) {
+        return t->kind;
+    }
+
     u64 h = c_hash_n(&t->kind, sizeof(t->kind));
     if (t->kind == TYPE_NAMED || t->kind == TYPE_GENERIC_PARAM) {
         u64 h2 = cstr_hash(&t->str);
@@ -31,31 +32,24 @@ TypeId TypeId_build(const Type *t) {
     return h;
 }
 
-TypeId TypeId_intern(const Type *t) {
+TypeId Type_intern(TypeMap *tm, const Type *t) {
     TypeId id = TypeId_build(t);
-    MemCxt old = switchMemCxt(typeMapCxt);
-    TypeMap_insert(&typeMap, id, *t);
-    switchMemCxt(old);
+    TypeMap_insert(tm, id, *t);
     return id;
 }
 
-const Type *TypeId_lookup(TypeId id) {
-    TypeMap_value *result = TypeMap_get(&typeMap, id);
+const Type *Type_lookup(const TypeMap *tm, TypeId id) {
+    const TypeMap_value *result = TypeMap_get(tm, id);
     assert(result);
     return &result->second;
 }
 
-void TypeTable_init(void) {
-    if (!typeMapCxt)
-        typeMapCxt = newMemCxt();
-
-    MemCxt old = switchMemCxt(typeMapCxt);
-    TypeMap_drop(&typeMap);
-    typeMap = TypeMap_init();
-    for (TypeKind kind = TYPE_UNKNOWN; kind < TYPE_NAMED; kind++) {
-        TypeMap_insert(&typeMap, TypeId_simple(kind), (Type){.kind = kind});
-    }
-    switchMemCxt(old);
+TypeMap TypeTable_init(void) {
+    TypeMap tm = TypeMap_init();
+    Type_simple(&tm, TYPE_UNKNOWN);
+    Type_simple(&tm, TYPE_ERROR);
+    Type_simple(&tm, TYPE_NONE);
+    return tm;
 }
 
 static const char *const typeNames[] = {
@@ -64,8 +58,8 @@ static const char *const typeNames[] = {
     "u8", "u16", "u32", "u64",
     "str", "char", "bool"};
 
-static void printType(cstr *out, TypeId id) {
-    const Type *t = TypeId_lookup(id);
+static void printType(const TypeMap *tm, cstr *out, TypeId id) {
+    const Type *t = Type_lookup(tm, id);
     switch (t->kind) {
         case TYPE_UNKNOWN:
         case TYPE_ERROR:
@@ -88,12 +82,12 @@ static void printType(cstr *out, TypeId id) {
             cstr_append_sv(out, cstr_sv(&t->str));
             break;
         case TYPE_GENERIC:
-            printType(out, *TypeChildren_at(&t->children, 0));
+            printType(tm, out, *TypeChildren_at(&t->children, 0));
             cstr_append(out, "[");
             c_forrange(i, 1, TypeChildren_size(&t->children)) {
                 if (i != 1)
                     cstr_append(out, ", ");
-                printType(out, *TypeChildren_at(&t->children, i));
+                printType(tm, out, *TypeChildren_at(&t->children, i));
             }
             cstr_append(out, "]");
             break;
@@ -106,7 +100,7 @@ static void printType(cstr *out, TypeId id) {
             c_forrange(i, 0, TypeChildren_size(&t->children)) {
                 if (i != 0)
                     cstr_append(out, ", ");
-                printType(out, *TypeChildren_at(&t->children, i));
+                printType(tm, out, *TypeChildren_at(&t->children, i));
             }
             cstr_append(out, ")");
             break;
@@ -134,17 +128,17 @@ static void printType(cstr *out, TypeId id) {
                 default:
                     assert(0);
             }
-            printType(out, *TypeChildren_at(&t->children, 0));
+            printType(tm, out, *TypeChildren_at(&t->children, 0));
             cstr_append(out, " -> ");
-            printType(out, *TypeChildren_at(&t->children, 1));
+            printType(tm, out, *TypeChildren_at(&t->children, 1));
             break;
         default:
             assert(0);
     }
 }
 
-cstr TypeId_print(TypeId id) {
+cstr TypeId_print(const TypeMap *tm, TypeId id) {
     cstr out = cstr_init();
-    printType(&out, id);
+    printType(tm, &out, id);
     return out;
 }

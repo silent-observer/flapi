@@ -7,7 +7,8 @@
 
 typedef struct {
     AstPool pool;
-    SymbolTable table;
+    SymbolTable symbols;
+    TypeMap types;
     AstTransformErrorVec errors;
     ScopeStack scopes;
 } AstTransformer;
@@ -74,13 +75,13 @@ static SymbolId makeSymbol(AstTransformer *astTrans, Token *t) {
     assert(!ScopeStack_empty(&astTrans->scopes));
 
     ScopeId scope = *ScopeStack_top(&astTrans->scopes);
-    return SymbolTable_add(&astTrans->table, scope, t->text);
+    return SymbolTable_add(&astTrans->symbols, scope, t->text);
 }
 
 static void pushScope(AstTransformer *astTrans) {
     assert(!ScopeStack_empty(&astTrans->scopes));
     ScopeId parent = *ScopeStack_top(&astTrans->scopes);
-    ScopeId new = SymbolTable_scope(&astTrans->table, parent);
+    ScopeId new = SymbolTable_scope(&astTrans->symbols, parent);
     ScopeStack_push(&astTrans->scopes, new);
 }
 
@@ -130,12 +131,12 @@ static TypeId transformBaseTypeExpr(AstTransformer *astTrans, CstNode *cst) {
             assert(0);
     }
 #undef token_case
-    return TypeId_simple(tk);
+    return Type_simple(&astTrans->types, tk);
 }
 
 #define expect_type_expr(cond) \
     if (!(cond))               \
-    return TypeId_simple(TYPE_ERROR)
+    return TYPEID_ERROR
 
 // GenericParamName(2) = '%'[0!] 'IDENT'[1]
 static TypeId transformGenericParamName(AstTransformer *astTrans, CstNode *cst) {
@@ -146,7 +147,7 @@ static TypeId transformGenericParamName(AstTransformer *astTrans, CstNode *cst) 
     assert(is_token(at(0), TOKEN_PERCENT));
     expect_type_expr(is_token(at(1), TOKEN_IDENT));
 
-    return TypeId_named(TYPE_GENERIC_PARAM, token_at(1)->text);
+    return Type_named(&astTrans->types, TYPE_GENERIC_PARAM, token_at(1)->text);
 }
 
 // TypeArg(2) = TypeExpr[0!E] ','?[1]
@@ -178,12 +179,12 @@ static TypeId transformCustomTypeExpr(AstTransformer *astTrans, CstNode *cst) {
     assert(CstChildren_size(&cst->children) == 2);
     assert(is_token(at(0), TOKEN_IDENT));
 
-    TypeId named = TypeId_named(TYPE_NAMED, token_at(0)->text);
+    TypeId named = Type_named(&astTrans->types, TYPE_NAMED, token_at(0)->text);
     if (is_node(at(1), CST_GENERIC_ARG_LIST)) {
         Type generic = {.kind = TYPE_GENERIC};
         TypeChildren_push(&generic.children, named);
         transformGenericArgList(astTrans, node_at(1), &generic.children);
-        return TypeId_build(&generic);
+        return Type_intern(&astTrans->types, &generic);
     } else {
         return named;
     }
@@ -204,7 +205,7 @@ static TypeId transformTupleTypeExpr(AstTransformer *astTrans, CstNode *cst) {
         TypeId arg = transformTypeArg(astTrans, it.ref->node);
         TypeChildren_push(&t.children, arg);
     }
-    return TypeId_build(&t);
+    return Type_intern(&astTrans->types, &t);
 }
 
 // FunctionSpec(5) = 'fn'[0!] ('['[1] '1'[2] ('+'[3] | '?'[3])? ']'[4])?
@@ -243,7 +244,7 @@ static TypeId transformFunctionTypeExpr(AstTransformer *astTrans, CstNode *cst) 
 
     Type t = {.kind = kind};
 
-    TypeId params = TypeId_simple(TYPE_ERROR);
+    TypeId params = TYPEID_ERROR;
     if (is_node(at(1), CST_TUPLE_TYPE_EXPR)) {
         params = transformTupleTypeExpr(astTrans, node_at(1));
     } else {
@@ -251,7 +252,7 @@ static TypeId transformFunctionTypeExpr(AstTransformer *astTrans, CstNode *cst) 
     }
     TypeChildren_push(&t.children, params);
 
-    TypeId returnType = TypeId_simple(TYPE_TUPLE);
+    TypeId returnType = Type_simple(&astTrans->types, TYPE_TUPLE);
     if (is_token(at(2), TOKEN_ARROW)) {
         returnType = transformTypeExpr(astTrans, node_at(3));
     }
@@ -264,7 +265,7 @@ static TypeId transformFunctionTypeExpr(AstTransformer *astTrans, CstNode *cst) 
     //
     // }
 
-    return TypeId_build(&t);
+    return Type_intern(&astTrans->types, &t);
 }
 
 // TypeExpr :=
@@ -277,7 +278,7 @@ static TypeId transformTypeExpr(AstTransformer *astTrans, CstNode *cst) {
     assert(cst);
     switch (cst->kind) {
         case CST_ERROR:
-            return TypeId_simple(TYPE_ERROR);
+            return TYPEID_ERROR;
         case CST_BASE_TYPE_EXPR:
             return transformBaseTypeExpr(astTrans, cst);
         case CST_GENERIC_PARAM_NAME:
@@ -290,7 +291,7 @@ static TypeId transformTypeExpr(AstTransformer *astTrans, CstNode *cst) {
             return transformFunctionTypeExpr(astTrans, cst);
         default:
             err_n("expected type", cst);
-            return TypeId_simple(TYPE_ERROR);
+            return TYPEID_ERROR;
     }
 }
 
@@ -312,7 +313,7 @@ static VarDef transformFnParam(AstTransformer *astTrans, CstNode *cst) {
         v.type = transformTypeExpr(astTrans, node_at(3));
     } else {
         err("function parameters must be declared with explicit types", at(0));
-        v.type = TypeId_simple(TYPE_UNKNOWN);
+        v.type = TYPEID_UNKNOWN;
     }
 
     return v;
@@ -580,7 +581,7 @@ static VarDef transformVarDef(AstTransformer *astTrans, CstNode *cst) {
         assert(node_at(2));
         v.type = transformTypeExpr(astTrans, node_at(2));
     } else
-        v.type = TypeId_simple(TYPE_UNKNOWN);
+        v.type = TYPEID_UNKNOWN;
 
     return v;
 }
@@ -732,7 +733,7 @@ static VarDef transformLambdaParam(AstTransformer *astTrans, CstNode *cst) {
         assert(at(3)->kind == CST_CHILD_NODE);
         v.type = transformTypeExpr(astTrans, node_at(2));
     } else
-        v.type = TypeId_simple(TYPE_UNKNOWN);
+        v.type = TYPEID_UNKNOWN;
 
     return v;
 }
@@ -1150,7 +1151,7 @@ static AstNode *transformFnDef(AstTransformer *astTrans, CstNode *cst) {
         assert(node_at(4));
         n->fnDef.returnType = transformTypeExpr(astTrans, node_at(4));
     } else {
-        n->fnDef.returnType = TypeId_simple(TYPE_TUPLE);
+        n->fnDef.returnType = Type_simple(&astTrans->types, TYPE_TUPLE);
     }
 
     if (is_node(at(5), CST_FN_MODIFIER_LIST)) {
@@ -1210,9 +1211,10 @@ AstTransformResult astFromCst(Cst *cst) {
     Ast ast = {0};
     AstTransformer astTrans = {
         .pool = AstPool_init(64),
-        .table = SymbolTable_init(),
+        .symbols = SymbolTable_init(),
         .errors = AstTransformErrorVec_init(),
         .scopes = ScopeStack_init(),
+        .types = TypeTable_init(),
     };
 
     ScopeStack_push(&astTrans.scopes, 0);
@@ -1220,6 +1222,7 @@ AstTransformResult astFromCst(Cst *cst) {
     collectGlobalsNode(&astTrans, cst->root);
     AstNode *program = transformProgram(&astTrans, cst->root);
     ast.root = program;
-    ast.symbols = astTrans.table;
+    ast.symbols = astTrans.symbols;
+    ast.types = astTrans.types;
     return (AstTransformResult){.ast = ast, .errors = astTrans.errors};
 }

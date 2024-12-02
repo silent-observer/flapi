@@ -2,6 +2,7 @@
 
 typedef struct {
     const SymbolTable *symbols;
+    const TypeMap *types;
     cstr out;
     u32 indent;
     const char *spaces;
@@ -29,7 +30,7 @@ static void printType(AstPrinter *p, TypeId t);
 static void printSymbol(AstPrinter *p, SymbolId s) {
     Symbol *symbol = SymbolTable_lookup(p->symbols, s);
     cstr_append_fmt(&p->out, "<%.*s@%u>", c_SV(symbol->name), symbol->scope);
-    // if (symbol->type != TypeId_simple(TYPE_UNKNOWN)) {
+    // if (symbol->type != Type_simple(TYPE_UNKNOWN)) {
     //     cstr_append(&p->out, " : ");
     //     printType(p, symbol->type);
     // }
@@ -478,14 +479,14 @@ static void printNode(AstPrinter *p, const AstNode *n) {
 static void printVarDef(AstPrinter *p, const VarDef *v) {
     Symbol *symbol = SymbolTable_lookup(p->symbols, v->symbol);
     cstr_append_fmt(&p->out, "VarDef <%.*s@%u>", c_SV(symbol->name), symbol->scope);
-    if (v->type != TypeId_simple(TYPE_UNKNOWN)) {
+    if (v->type != TYPEID_UNKNOWN) {
         cstr_append(&p->out, " : ");
         printType(p, v->type);
     }
 }
 
 static void printType(AstPrinter *p, TypeId t) {
-    cstr s = TypeId_print(t);
+    cstr s = TypeId_print(p->types, t);
     cstr_append_s(&p->out, s);
     cstr_drop(&s);
 }
@@ -493,6 +494,7 @@ static void printType(AstPrinter *p, TypeId t) {
 cstr printAst(const Ast *ast) {
     AstPrinter p = {
         .symbols = &ast->symbols,
+        .types = &ast->types,
         .out = cstr_init(),
         .indent = 0,
         .spaces = "  ",
