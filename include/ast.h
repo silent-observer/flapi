@@ -12,12 +12,14 @@
     XX(AST_ERROR, "Error")                       \
     XX(AST_PROGRAM, "Program")                   \
     XX(AST_FN_DEF, "FnDef")                      \
+                                                 \
     XX(AST_EXPR_STMT, "ExprStmt")                \
     XX(AST_LET_STMT, "LetStmt")                  \
     XX(AST_WITH_STMT, "WithStmt")                \
     XX(AST_RETURN_STMT, "ReturnStmt")            \
     XX(AST_BREAK_STMT, "BreakStmt")              \
     XX(AST_CONTINUE_STMT, "ContinueStmt")        \
+                                                 \
     XX(AST_ASSIGN_EXPR, "AssignExpr")            \
     XX(AST_IF_EXPR, "IfExpr")                    \
     XX(AST_IF_CLAUSE, "IfClause")                \
@@ -41,6 +43,9 @@ typedef enum {
     AST_KIND_LIST AST_NODE_TYPE_MAX
 #undef XX
 } AstNodeKind;
+
+#define Ast_isStmt(kind) ((kind) >= AST_EXPR_STMT && (kind) <= AST_CONTINUE_STMT)
+#define Ast_isExpr(kind) ((kind) >= AST_ASSIGN_EXPR)
 
 static const csview AST_KIND_NAMES[AST_NODE_TYPE_MAX] = {
 #define XX(kind, name) c_sv(name),
@@ -135,25 +140,37 @@ typedef struct {
     AstChildren body;
 } ForExprNode;
 
+#define BINARY_EXPR_KIND_LIST \
+    XX(BINARY_ADD, "+")       \
+    XX(BINARY_SUB, "-")       \
+    XX(BINARY_MUL, "*")       \
+    XX(BINARY_DIV, "/")       \
+    XX(BINARY_MOD, "%")       \
+                              \
+    XX(BINARY_EQ, "==")       \
+    XX(BINARY_NE, "!=")       \
+    XX(BINARY_GT, ">")        \
+    XX(BINARY_GE, ">=")       \
+    XX(BINARY_LT, "<")        \
+    XX(BINARY_LE, "<=")       \
+                              \
+    XX(BINARY_AND, "and")     \
+    XX(BINARY_OR, "or")       \
+                              \
+    XX(BINARY_PIPE, "|>")
+
 typedef enum {
-    BINARY_ADD,
-    BINARY_SUB,
-    BINARY_MUL,
-    BINARY_DIV,
-    BINARY_MOD,
-
-    BINARY_EQ,
-    BINARY_NE,
-    BINARY_GT,
-    BINARY_GE,
-    BINARY_LT,
-    BINARY_LE,
-
-    BINARY_AND,
-    BINARY_OR,
-
-    BINARY_PIPE,
+#define XX(kind, str) kind,
+    BINARY_EXPR_KIND_LIST
+#undef XX
 } BinaryExprKind;
+
+static const czview BINARY_EXPR_KIND_STRS[] = {
+#define XX(kind, str) c_zv(str),
+    BINARY_EXPR_KIND_LIST
+#undef XX
+};
+
 typedef struct {
     BinaryExprKind kind;
     AstNode *lhs;
@@ -261,6 +278,6 @@ typedef struct {
     TypeMap types;
 } Ast;
 
-cstr printAst(const Ast *ast);
+cstr printAst(const Ast *ast, b32 printTypes);
 
 #endif

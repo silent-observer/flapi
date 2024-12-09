@@ -5,6 +5,7 @@ typedef struct {
     const TypeMap *types;
     cstr out;
     u32 indent;
+    b32 printTypes;
     const char *spaces;
 } AstPrinter;
 
@@ -30,10 +31,10 @@ static void printType(AstPrinter *p, TypeId t);
 static void printSymbol(AstPrinter *p, SymbolId s) {
     Symbol *symbol = SymbolTable_lookup(p->symbols, s);
     cstr_append_fmt(&p->out, "<%.*s@%u>", c_SV(symbol->name), symbol->scope);
-    // if (symbol->type != Type_simple(TYPE_UNKNOWN)) {
-    //     cstr_append(&p->out, " : ");
-    //     printType(p, symbol->type);
-    // }
+    if (p->printTypes) {
+        cstr_append(&p->out, " : ");
+        printType(p, symbol->type);
+    }
 }
 
 static void printAstChildren(AstPrinter *p, const AstChildren *n) {
@@ -76,11 +77,15 @@ static void printVarDefVec(AstPrinter *p, const VarDefVec *n) {
     cstr_append(&p->out, "]");
 }
 
-#define START(name)                 \
-    do {                            \
-        cstr_append(&p->out, name); \
-        cstr_append(&p->out, " {"); \
-        p->indent++;                \
+#define START(name)                      \
+    do {                                 \
+        cstr_append(&p->out, name);      \
+        if (p->printTypes) {             \
+            cstr_append(&p->out, " : "); \
+            printType(p, n->type);       \
+        }                                \
+        cstr_append(&p->out, " {");      \
+        p->indent++;                     \
     } while (0)
 #define END()                      \
     do {                           \
@@ -339,7 +344,7 @@ static void printLambdaExpr(AstPrinter *p, const AstNode *n) {
     assert(n->kind == AST_LAMBDA_EXPR);
     START("LambdaExpr");
     MANY_VARDEF("params", n->lambdaExpr.params);
-    if (n->lambdaExpr.returnType)
+    if (n->lambdaExpr.returnType.id != Type_simple(TYPE_TUPLE).id)
         TYPE("return", n->lambdaExpr.returnType);
     MANY("body", n->lambdaExpr.body);
     END();
@@ -371,16 +376,28 @@ static void printVarExpr(AstPrinter *p, const AstNode *n) {
 static void printIntLiteralExpr(AstPrinter *p, const AstNode *n) {
     assert(n->kind == AST_INT_LITERAL_EXPR);
     cstr_append_fmt(&p->out, "IntLiteralExpr(%llu)", n->intLiteralExpr.val);
+    if (p->printTypes) {
+        cstr_append(&p->out, " : ");
+        printType(p, n->type);
+    }
 }
 
 static void printStrLiteralExpr(AstPrinter *p, const AstNode *n) {
     assert(n->kind == AST_STR_LITERAL_EXPR);
     cstr_append_fmt(&p->out, "StrLiteralExpr(\"%.*s\")", c_SV(n->strLiteralExpr.str));
+    if (p->printTypes) {
+        cstr_append(&p->out, " : ");
+        printType(p, n->type);
+    }
 }
 
 static void printCharLiteralExpr(AstPrinter *p, const AstNode *n) {
     assert(n->kind == AST_CHAR_LITERAL_EXPR);
     cstr_append_fmt(&p->out, "CharLiteralExpr(\'%.*s\')", c_SV(n->charLiteralExpr.str));
+    if (p->printTypes) {
+        cstr_append(&p->out, " : ");
+        printType(p, n->type);
+    }
 }
 
 static void printBoolLiteralExpr(AstPrinter *p, const AstNode *n) {
@@ -389,6 +406,10 @@ static void printBoolLiteralExpr(AstPrinter *p, const AstNode *n) {
         cstr_append(&p->out, "BoolLiteralExpr(true)");
     else
         cstr_append(&p->out, "BoolLiteralExpr(false)");
+    if (p->printTypes) {
+        cstr_append(&p->out, " : ");
+        printType(p, n->type);
+    }
 }
 
 static void printNode(AstPrinter *p, const AstNode *n) {
@@ -479,25 +500,27 @@ static void printNode(AstPrinter *p, const AstNode *n) {
 static void printVarDef(AstPrinter *p, const VarDef *v) {
     Symbol *symbol = SymbolTable_lookup(p->symbols, v->symbol);
     cstr_append_fmt(&p->out, "VarDef <%.*s@%u>", c_SV(symbol->name), symbol->scope);
-    if (v->type != TYPEID_UNKNOWN) {
+    if (v->type.id != Type_simple(TYPE_UNKNOWN).id) {
         cstr_append(&p->out, " : ");
         printType(p, v->type);
+    } else if (symbol->type.id != Type_simple(TYPE_UNKNOWN).id) {
+        cstr_append(&p->out, " :? ");
+        printType(p, symbol->type);
     }
 }
 
 static void printType(AstPrinter *p, TypeId t) {
-    cstr s = TypeId_print(p->types, t);
-    cstr_append_s(&p->out, s);
-    cstr_drop(&s);
+    cstr_append(&p->out, TypeId_print_zv(p->types, t).str);
 }
 
-cstr printAst(const Ast *ast) {
+cstr printAst(const Ast *ast, b32 printTypes) {
     AstPrinter p = {
         .symbols = &ast->symbols,
         .types = &ast->types,
         .out = cstr_init(),
         .indent = 0,
         .spaces = "  ",
+        .printTypes = printTypes,
     };
     printNode(&p, ast->root);
     return p.out;

@@ -35,7 +35,7 @@ int asttrans_test(void) {
         ParseResult parseResult = parse(tokens.data, TokenVec_size(&tokens));
         AstTransformResult astResult = astFromCst(&parseResult.cst);
 
-        cstr astDump = printAst(&astResult.ast);
+        cstr astDump = printAst(&astResult.ast, false);
         if (AstTransformErrorVec_size(&astResult.errors) > 0) {
             cstr_append(&astDump, "\n\n------ ERRORS ------\n");
             c_foreach(it, AstTransformErrorVec, astResult.errors) {

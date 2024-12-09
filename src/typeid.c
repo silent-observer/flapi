@@ -1,10 +1,5 @@
 #include "typeid.h"
 
-TypeId Type_simple(TypeMap *tm, TypeKind kind) {
-    Type t = {.kind = kind};
-    return Type_intern(tm, &t);
-}
-
 TypeId Type_named(TypeMap *tm, TypeKind kind, csview str) {
     Type t = {.kind = kind, .str = cstr_from_sv(str)};
     return Type_intern(tm, &t);
@@ -16,20 +11,19 @@ TypeId Type_rec1(TypeMap *tm, TypeKind kind, TypeId arg) {
 }
 
 static TypeId TypeId_build(const Type *t) {
-    if (t->kind == TYPE_UNKNOWN || t->kind == TYPE_ERROR || t->kind == TYPE_NONE) {
-        return t->kind;
-    }
+    if (t->kind <= TYPE_TUPLE && TypeChildren_size(&t->children) == 0)
+        return (TypeId){.id = t->kind};
 
     u64 h = c_hash_n(&t->kind, sizeof(t->kind));
     if (t->kind == TYPE_NAMED || t->kind == TYPE_GENERIC_PARAM) {
         u64 h2 = cstr_hash(&t->str);
-        return c_hash_mix(h, h2);
+        return (TypeId){.id = c_hash_mix(h, h2)};
     }
     c_foreach(it, TypeChildren, t->children) {
         u64 h2 = c_hash_n(it.ref, sizeof(*it.ref));
         h = c_hash_mix(h, h2);
     }
-    return h;
+    return (TypeId){.id = h};
 }
 
 TypeId Type_intern(TypeMap *tm, const Type *t) {
@@ -46,14 +40,15 @@ const Type *Type_lookup(const TypeMap *tm, TypeId id) {
 
 TypeMap TypeTable_init(void) {
     TypeMap tm = TypeMap_init();
-    Type_simple(&tm, TYPE_UNKNOWN);
-    Type_simple(&tm, TYPE_ERROR);
-    Type_simple(&tm, TYPE_NONE);
+    for (TypeKind tk = TYPE_UNKNOWN; tk <= TYPE_TUPLE; tk++) {
+        Type t = {.kind = tk};
+        Type_intern(&tm, &t);
+    }
     return tm;
 }
 
 static const char *const typeNames[] = {
-    "<unknown>", "<error>", "<none>",
+    "<unknown>", "<error>", "<none>", "<drop>",
     "i8", "i16", "i32", "i64",
     "u8", "u16", "u32", "u64",
     "str", "char", "bool"};
@@ -64,6 +59,7 @@ static void printType(const TypeMap *tm, cstr *out, TypeId id) {
         case TYPE_UNKNOWN:
         case TYPE_ERROR:
         case TYPE_NONE:
+        case TYPE_DROP:
         case TYPE_I8:
         case TYPE_I16:
         case TYPE_I32:
@@ -141,4 +137,11 @@ cstr TypeId_print(const TypeMap *tm, TypeId id) {
     cstr out = cstr_init();
     printType(tm, &out, id);
     return out;
+}
+
+czview TypeId_print_zv(const TypeMap *tm, TypeId id) {
+    static cstr out = {0};
+    cstr_clear(&out);
+    printType(tm, &out, id);
+    return cstr_zv(&out);
 }

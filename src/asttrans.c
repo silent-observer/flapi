@@ -131,12 +131,12 @@ static TypeId transformBaseTypeExpr(AstTransformer *astTrans, CstNode *cst) {
             assert(0);
     }
 #undef token_case
-    return Type_simple(&astTrans->types, tk);
+    return Type_simple(tk);
 }
 
 #define expect_type_expr(cond) \
     if (!(cond))               \
-    return TYPEID_ERROR
+    return Type_simple(TYPE_ERROR)
 
 // GenericParamName(2) = '%'[0!] 'IDENT'[1]
 static TypeId transformGenericParamName(AstTransformer *astTrans, CstNode *cst) {
@@ -244,7 +244,7 @@ static TypeId transformFunctionTypeExpr(AstTransformer *astTrans, CstNode *cst) 
 
     Type t = {.kind = kind};
 
-    TypeId params = TYPEID_ERROR;
+    TypeId params = Type_simple(TYPE_ERROR);
     if (is_node(at(1), CST_TUPLE_TYPE_EXPR)) {
         params = transformTupleTypeExpr(astTrans, node_at(1));
     } else {
@@ -252,7 +252,7 @@ static TypeId transformFunctionTypeExpr(AstTransformer *astTrans, CstNode *cst) 
     }
     TypeChildren_push(&t.children, params);
 
-    TypeId returnType = Type_simple(&astTrans->types, TYPE_TUPLE);
+    TypeId returnType = Type_simple(TYPE_TUPLE);
     if (is_token(at(2), TOKEN_ARROW)) {
         returnType = transformTypeExpr(astTrans, node_at(3));
     }
@@ -278,7 +278,7 @@ static TypeId transformTypeExpr(AstTransformer *astTrans, CstNode *cst) {
     assert(cst);
     switch (cst->kind) {
         case CST_ERROR:
-            return TYPEID_ERROR;
+            return Type_simple(TYPE_ERROR);
         case CST_BASE_TYPE_EXPR:
             return transformBaseTypeExpr(astTrans, cst);
         case CST_GENERIC_PARAM_NAME:
@@ -291,7 +291,7 @@ static TypeId transformTypeExpr(AstTransformer *astTrans, CstNode *cst) {
             return transformFunctionTypeExpr(astTrans, cst);
         default:
             err_n("expected type", cst);
-            return TYPEID_ERROR;
+            return Type_simple(TYPE_ERROR);
     }
 }
 
@@ -313,7 +313,7 @@ static VarDef transformFnParam(AstTransformer *astTrans, CstNode *cst) {
         v.type = transformTypeExpr(astTrans, node_at(3));
     } else {
         err("function parameters must be declared with explicit types", at(0));
-        v.type = TYPEID_UNKNOWN;
+        v.type = Type_simple(TYPE_UNKNOWN);
     }
 
     return v;
@@ -581,7 +581,7 @@ static VarDef transformVarDef(AstTransformer *astTrans, CstNode *cst) {
         assert(node_at(2));
         v.type = transformTypeExpr(astTrans, node_at(2));
     } else
-        v.type = TYPEID_UNKNOWN;
+        v.type = Type_simple(TYPE_UNKNOWN);
 
     return v;
 }
@@ -733,7 +733,7 @@ static VarDef transformLambdaParam(AstTransformer *astTrans, CstNode *cst) {
         assert(at(3)->kind == CST_CHILD_NODE);
         v.type = transformTypeExpr(astTrans, node_at(2));
     } else
-        v.type = TYPEID_UNKNOWN;
+        v.type = Type_simple(TYPE_UNKNOWN);
 
     return v;
 }
@@ -1151,7 +1151,7 @@ static AstNode *transformFnDef(AstTransformer *astTrans, CstNode *cst) {
         assert(node_at(4));
         n->fnDef.returnType = transformTypeExpr(astTrans, node_at(4));
     } else {
-        n->fnDef.returnType = Type_simple(&astTrans->types, TYPE_TUPLE);
+        n->fnDef.returnType = Type_simple(TYPE_TUPLE);
     }
 
     if (is_node(at(5), CST_FN_MODIFIER_LIST)) {
