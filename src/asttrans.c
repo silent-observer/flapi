@@ -819,6 +819,38 @@ static AstNode *transformCallExpr(AstTransformer *astTrans, CstNode *cst) {
     return n;
 }
 
+// DotCallExpr(5) = PostfixExpr[0!E] '.'[!1] 'IDENT'[2] ArgList?[3] LambdaExpr?[4]
+static AstNode *transformDotCallExpr(AstTransformer *astTrans, CstNode *cst) {
+    assert(cst);
+    assert(cst->kind == CST_DOT_CALL_EXPR);
+    assert(CstChildren_size(&cst->children) == 5);
+
+    DEF_NODE(n, AST_CALL_EXPR_CONST);
+
+    assert(node_at(0));
+    AstNode *firstArg = transformExpr(astTrans, node_at(0));
+    AstChildren_push(&n->callExprConst.args, firstArg);
+
+    assert(is_token(at(1), TOKEN_DOT));
+    if (token_at(2)) {
+        n->callExprConst.symbol = makeSymbol(astTrans, token_at(2));
+    } else
+        n->callExprConst.symbol = NO_SYMBOL_ID;
+
+    assert(node_at(3) || node_at(4));
+
+    if (node_at(3)) {
+        assert(is_node(at(3), CST_ARG_LIST));
+        transformArgList(astTrans, node_at(3), &n->callExprConst.args);
+    }
+    if (node_at(4)) {
+        assert(is_node(at(4), CST_LAMBDA_EXPR));
+        n->callExprConst.lambdaExpr = transformLambdaExpr(astTrans, node_at(4));
+    }
+
+    return n;
+}
+
 // IndexExpr(4) = PostfixExpr[0!E] '['[1!] Expr[2!E] ']'[3]
 static AstNode *transformIndexExpr(AstTransformer *astTrans, CstNode *cst) {
     assert(cst);
@@ -1064,6 +1096,8 @@ static AstNode *transformExpr(AstTransformer *astTrans, CstNode *cst) {
             return transformIndexExpr(astTrans, cst);
         case CST_DOT_EXPR:
             return transformDotExpr(astTrans, cst);
+        case CST_DOT_CALL_EXPR:
+            return transformDotCallExpr(astTrans, cst);
         case CST_VAR_EXPR:
             return transformVarExpr(astTrans, cst);
         case CST_LITERAL_EXPR:

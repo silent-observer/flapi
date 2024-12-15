@@ -115,10 +115,12 @@ SimpleExpr = <Pratt Parser> (BinaryExpr(3) = UnaryExpr[0!E] BinaryOp[1!] UnaryEx
 PostfixExpr :=
    DelimetedExpr
  | DotExpr
+ | DotCallExpr
  | CallExpr
  | IndexExpr
 
 DotExpr(3) = PostfixExpr[0!E] '.'[!1] 'IDENT'[2]
+DotCallExpr(5) = PostfixExpr[0!E] '.'[!1] 'IDENT'[2] ArgList?[3] LambdaExpr?[4]
 CallExpr(3) = PostfixExpr[0!E] ArgList?[1] LambdaExpr?[2]
 ArgList(*) = '('[0!] Arg*[*!E] ')'[?]
 Arg(2) = Expr[0!E] ','?[1]

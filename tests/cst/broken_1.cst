@@ -157,14 +157,12 @@
         [Semi]
       )
       (ExprStmt
-        (CallExpr
-          (VarExpr [Ident baz])
+        (DotCallExpr
+          (LiteralExpr [Decimal 5])
+          [Dot]
+          [Ident baz]
           (ArgList
             [LParen]
-            (Arg
-              (LiteralExpr [Decimal 5])
-              [Comma]
-            )
             (Arg
               (LiteralExpr [Decimal 6])
               _

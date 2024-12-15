@@ -1157,7 +1157,18 @@ static ClosedIndex parseDotOp(Parser *p, ClosedIndex lhs) {
     OpenIndex o = openBeforeEvent(p, lhs); // 0
     advance(p);                            // 1
     expect(p, TOKEN_IDENT);                // 2
-    return closeEvent(p, o, CST_DOT_EXPR);
+    if (at(p, TOKEN_LPAREN) || at(p, TOKEN_PIPE)) {
+        if (at(p, TOKEN_LPAREN))
+            parseArgList(p); // 3
+        else
+            skip(p); // 3
+        if (at(p, TOKEN_PIPE))
+            parseLambdaExpr(p); // 4
+        else
+            skip(p); // 4
+        return closeEvent(p, o, CST_DOT_CALL_EXPR);
+    } else
+        return closeEvent(p, o, CST_DOT_EXPR);
 }
 
 // CallExpr(3) = PostfixExpr[0!E] ArgList?[1] LambdaExpr?[2]

@@ -52,6 +52,7 @@
     XX(CST_LAMBDA_PARAM, "LambdaParam")            \
     XX(CST_INDEX_EXPR, "IndexExpr")                \
     XX(CST_DOT_EXPR, "DotExpr")                    \
+    XX(CST_DOT_CALL_EXPR, "DotCallExpr")           \
     XX(CST_VAR_EXPR, "VarExpr")                    \
     XX(CST_LITERAL_EXPR, "LiteralExpr")            \
     XX(CST_STRUCT_DEF, "StructDef")                \

@@ -88,10 +88,8 @@ Program {
           }
         }
         2: ExprStmt {
-          expr: CallExpr {
-            fn: VarExpr {
-              var: <baz@0>
-            }
+          expr: CallExprConst {
+            name: <baz@0>
             args: [
               0: IntLiteralExpr(5)
               1: IntLiteralExpr(6)
