@@ -24,7 +24,6 @@
     XX(AST_IF_EXPR, "IfExpr")                    \
     XX(AST_IF_CLAUSE, "IfClause")                \
     XX(AST_WHILE_EXPR, "WhileExpr")              \
-    XX(AST_FOR_EXPR, "ForExpr")                  \
     XX(AST_BINARY_EXPR, "BinaryExpr")            \
     XX(AST_UNARY_EXPR, "UnaryExpr")              \
     XX(AST_CALL_EXPR_CONST, "CallExprConst")     \
@@ -130,15 +129,9 @@ typedef struct {
 } IfClauseNode;
 
 typedef struct {
-    AstNode *condition; // Can be NULL to indicate "while true"
+    AstNode *condition;
     AstChildren body;
 } WhileExprNode;
-
-typedef struct {
-    VarDef varDef;
-    AstNode *iterExpr;
-    AstChildren body;
-} ForExprNode;
 
 #define BINARY_EXPR_KIND_LIST \
     XX(BINARY_ADD, "+")       \
@@ -252,7 +245,6 @@ struct AstNode {
         IfExprNode ifExpr;
         IfClauseNode ifClause;
         WhileExprNode whileExpr;
-        ForExprNode forExpr;
         BinaryExprNode binaryExpr;
         UnaryExprNode unaryExpr;
         CallExprNode callExpr;

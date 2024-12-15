@@ -586,33 +586,6 @@ static VarDef transformVarDef(AstTransformer *astTrans, CstNode *cst) {
     return v;
 }
 
-// ForExpr(5) = 'for'[0!] VarDef[1!] 'in'[2] SimpleExpr[3E] Block[4]
-static AstNode *transformForExpr(AstTransformer *astTrans, CstNode *cst) {
-    assert(cst);
-    assert(cst->kind == CST_FOR_EXPR);
-    assert(CstChildren_size(&cst->children) == 5);
-
-    DEF_NODE(n, AST_FOR_EXPR);
-
-    assert(is_token(at(0), TOKEN_K_FOR));
-    assert(is_node(at(1), CST_VAR_DEF));
-
-    pushScope(astTrans);
-    n->forExpr.varDef = transformVarDef(astTrans, node_at(1));
-
-    assert(node_at(3));
-    n->forExpr.iterExpr = node_at(3)
-                              ? transformExpr(astTrans, node_at(3))
-                              : make_err("expected something to iterate on in the for loop", at(3));
-    if (node_at(4)) {
-        assert(is_node(at(4), CST_BLOCK));
-        transformBlock(astTrans, node_at(4), &n->whileExpr.body);
-    } else
-        err("expected a body for while loop", at(4));
-    popScope(astTrans);
-    return n;
-}
-
 // ParenExpr(3) = '('[0!] Expr[1E] ')'[2]
 static AstNode *transformParenExpr(AstTransformer *astTrans, CstNode *cst) {
     assert(cst);
@@ -1082,8 +1055,6 @@ static AstNode *transformExpr(AstTransformer *astTrans, CstNode *cst) {
             return transformWhileExpr(astTrans, cst);
         case CST_LOOP_EXPR:
             return transformLoopExpr(astTrans, cst);
-        case CST_FOR_EXPR:
-            return transformForExpr(astTrans, cst);
         case CST_PAREN_EXPR:
             return transformParenExpr(astTrans, cst);
         case CST_UNARY_EXPR:

@@ -170,8 +170,6 @@ static void parseIfClause(Parser *p);
 static void parseElseClause(Parser *p);
 static void parseElseIfClause(Parser *p);
 static void parseWhileExpr(Parser *p);
-static void parseLoopExpr(Parser *p);
-static void parseForExpr(Parser *p);
 
 static ClosedIndex parseSimpleExpr(Parser *p);
 static ClosedIndex parseDelimetedExpr(Parser *p);
@@ -766,7 +764,6 @@ static void parseExpr(Parser *p) {
     switch (nth(p, 0)) {
         case TOKEN_K_IF:
         case TOKEN_K_WHILE:
-        case TOKEN_K_FOR:
         case TOKEN_K_LOOP:
             parseBlockExpr(p);
             break;
@@ -801,7 +798,6 @@ static void parseBlocklessExpr(Parser *p) {
 //   IfExpr
 // | WhileExpr
 // | LoopExpr
-// | ForExpr
 static void parseBlockExpr(Parser *p) {
     switch (nth(p, 0)) {
         case TOKEN_K_IF:
@@ -809,12 +805,6 @@ static void parseBlockExpr(Parser *p) {
             break;
         case TOKEN_K_WHILE:
             parseWhileExpr(p);
-            break;
-        case TOKEN_K_FOR:
-            parseForExpr(p);
-            break;
-        case TOKEN_K_LOOP:
-            parseLoopExpr(p);
             break;
         default:
             assert(0);
@@ -906,40 +896,6 @@ static void parseWhileExpr(Parser *p) {
         skip(p); // 2
 
     closeEvent(p, o, CST_WHILE_EXPR);
-}
-
-// LoopExpr(2) = 'loop'[0!] Block[1]
-static void parseLoopExpr(Parser *p) {
-    assert(at(p, TOKEN_K_LOOP));
-    OpenIndex o = openEvent(p);
-
-    expect(p, TOKEN_K_LOOP); // 0
-    if (at(p, TOKEN_LCURLY))
-        parseBlock(p); // 1
-    else
-        skip(p); // 1
-
-    closeEvent(p, o, CST_LOOP_EXPR);
-}
-
-// ForExpr(5) = 'for'[0!] VarDef[1!] 'in'[2] SimpleExpr[3E] Block[4]
-static void parseForExpr(Parser *p) {
-    assert(at(p, TOKEN_K_FOR));
-    OpenIndex o = openEvent(p);
-
-    expect(p, TOKEN_K_FOR); // 0
-    parseVarDef(p);         // 1
-    expect(p, TOKEN_K_IN);  // 2
-    if (at_any(p, SIMPLE_EXPR_FIRST))
-        parseSimpleExpr(p); // 3
-    else
-        skip(p); // 3
-    if (at(p, TOKEN_LCURLY))
-        parseBlock(p); // 4
-    else
-        skip(p); // 4
-
-    closeEvent(p, o, CST_FOR_EXPR);
 }
 
 // SimpleExpr :=

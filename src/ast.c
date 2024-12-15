@@ -255,24 +255,9 @@ static void printIfClause(AstPrinter *p, const AstNode *n) {
 
 static void printWhileExpr(AstPrinter *p, const AstNode *n) {
     assert(n->kind == AST_WHILE_EXPR);
-    if (n->whileExpr.condition) {
-        START("WhileExpr");
-        ONE("cond", n->whileExpr.condition);
-        MANY("body", n->whileExpr.body);
-        END();
-    } else {
-        START("LoopExpr");
-        MANY("body", n->whileExpr.body);
-        END();
-    }
-}
-
-static void printForExpr(AstPrinter *p, const AstNode *n) {
-    assert(n->kind == AST_FOR_EXPR);
-    START("ForExpr");
-    ONE_VARDEF("var", n->forExpr.varDef);
-    ONE("iter", n->forExpr.iterExpr);
-    MANY("body", n->forExpr.body);
+    START("WhileExpr");
+    ONE("cond", n->whileExpr.condition);
+    MANY("body", n->whileExpr.body);
     END();
 }
 
@@ -452,9 +437,6 @@ static void printNode(AstPrinter *p, const AstNode *n) {
             break;
         case AST_WHILE_EXPR:
             printWhileExpr(p, n);
-            break;
-        case AST_FOR_EXPR:
-            printForExpr(p, n);
             break;
         case AST_BINARY_EXPR:
             printBinaryExpr(p, n);
