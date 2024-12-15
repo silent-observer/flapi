@@ -5,28 +5,22 @@
 #include "test.h"
 #include <stc/cstr.h>
 
-static const char *PARSER_TESTS[] = {
-    "while_counter",
-    "fibonacci",
-    "broken_1",
-    "broken_2",
-    "broken_3",
-    "broken_4",
-};
-
 int parser_test(void) {
+    FilenameVec names = readDir(TEST_DIR "/code_input");
+
     static char filename[512];
     b32 ok = true;
-    c_forrange(i, c_arraylen(PARSER_TESTS)) {
+    c_foreach(it, FilenameVec, names) {
         pushMemCxt();
 #define DEFER popMemCxt();
 
-        const char *name = PARSER_TESTS[i];
-        sprintf(filename, TEST_DIR "/code/%s.fj", name);
+        const char *name = cstr_str(it.ref);
+        sprintf(filename, TEST_DIR "/code_input/%s", name);
         cstr code = readTextFile(filename);
         test_assert_defer(!cstr_empty(&code));
 
-        sprintf(filename, TEST_DIR "/cst/%s.cst", name);
+        cstr nameCst = replaceFilenameExt(name, "cst");
+        sprintf(filename, TEST_DIR "/parse/expected/%s", cstr_str(&nameCst));
         cstr expected = readTextFile(filename);
 
         TokenVec tokens = lex(cstr_zv(&code));
@@ -42,7 +36,7 @@ int parser_test(void) {
             }
         }
 
-        sprintf(filename, TEST_DIR "/parse_results/%s.cst", name);
+        sprintf(filename, TEST_DIR "/parse/results/%s", cstr_str(&nameCst));
         writeTextFile(filename, cstr_sv(&cstDump));
         if (!cstr_eq(&expected, &cstDump)) {
             fprintf(stderr, "CST doesn't match: %s\n", name);
@@ -51,6 +45,7 @@ int parser_test(void) {
 
         DEFER
     }
+    FilenameVec_drop(&names);
     test_assert(ok);
     test_success();
 }

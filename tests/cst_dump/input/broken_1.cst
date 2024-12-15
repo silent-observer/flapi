@@ -1,0 +1,179 @@
+(Program
+  (FnDef
+    [Def]
+    [Ident foo]
+    (FnParamList
+      [LParen]
+      (FnParam
+        [Ident a]
+        [Colon]
+        _
+        (BaseTypeExpr [I32])
+        [Comma]
+      )
+      (FnParam
+        [Ident b]
+        _
+        _
+        (Error)
+        _
+      )
+      _
+    )
+    _
+    _
+    _
+    (Block
+      [LCurly]
+      (ReturnStmt
+        [Return]
+        (BinaryExpr
+          (VarExpr [Ident a])
+          [Plus]
+          (VarExpr [Ident b])
+        )
+        [Semi]
+      )
+      [RCurly]
+    )
+  )
+  (FnDef
+    [Def]
+    [Ident bar]
+    (FnParamList
+      [LParen]
+      (FnParam
+        [Ident a]
+        _
+        _
+        (Error)
+        [Comma]
+      )
+      (FnParam
+        [Ident b]
+        _
+        _
+        (Error)
+        _
+      )
+      [RParen]
+    )
+    _
+    _
+    _
+    (Block
+      [LCurly]
+      (ReturnStmt
+        [Return]
+        (BinaryExpr
+          (VarExpr [Ident a])
+          [Plus]
+          (VarExpr [Ident b])
+        )
+        [Semi]
+      )
+      [RCurly]
+    )
+  )
+  (FnDef
+    [Def]
+    [Ident baz]
+    (FnParamList
+      [LParen]
+      (FnParam
+        [Ident a]
+        _
+        _
+        (Error)
+        [Comma]
+      )
+      (FnParam
+        [Ident b]
+        [Colon]
+        _
+        (BaseTypeExpr [I32])
+        _
+      )
+      [RParen]
+    )
+    _
+    _
+    _
+    _
+  )
+  (Error [Return])
+  (Error [Ident a])
+  (Error [Plus])
+  (Error [Ident b])
+  (Error [Semi])
+  (FnDef
+    [Def]
+    [Ident main]
+    (FnParamList
+      [LParen]
+      [RParen]
+    )
+    _
+    _
+    _
+    (Block
+      [LCurly]
+      (ExprStmt
+        (CallExpr
+          (VarExpr [Ident foo])
+          (ArgList
+            [LParen]
+            (Arg
+              (LiteralExpr [Decimal 1])
+              [Comma]
+            )
+            (Arg
+              (LiteralExpr [Decimal 2])
+              _
+            )
+            [RParen]
+          )
+          _
+        )
+        [Semi]
+      )
+      (ExprStmt
+        (CallExpr
+          (VarExpr [Ident bar])
+          (ArgList
+            [LParen]
+            (Arg
+              (LiteralExpr [Decimal 3])
+              [Comma]
+            )
+            (Arg
+              (LiteralExpr [Decimal 4])
+              _
+            )
+            [RParen]
+          )
+          _
+        )
+        [Semi]
+      )
+      (ExprStmt
+        (DotCallExpr
+          (LiteralExpr [Decimal 5])
+          [Dot]
+          [Ident baz]
+          (ArgList
+            [LParen]
+            (Arg
+              (LiteralExpr [Decimal 6])
+              _
+            )
+            [RParen]
+          )
+          _
+        )
+        [Semi]
+      )
+      [RCurly]
+    )
+  )
+)

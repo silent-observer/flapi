@@ -7,28 +7,22 @@
 #include "test.h"
 #include <stc/cstr.h>
 
-static const char *AST_TESTS[] = {
-    "while_counter",
-    "fibonacci",
-    "broken_1",
-    "broken_2",
-    "broken_3",
-    "broken_4",
-};
-
 int asttrans_test(void) {
+    FilenameVec names = readDir(TEST_DIR "/code_input");
+
     static char filename[512];
     b32 ok = true;
-    c_forrange(i, c_arraylen(AST_TESTS)) {
+    c_foreach(it, FilenameVec, names) {
         pushMemCxt();
 #define DEFER popMemCxt();
 
-        const char *name = AST_TESTS[i];
-        sprintf(filename, TEST_DIR "/code/%s.fj", name);
+        const char *name = cstr_str(it.ref);
+        sprintf(filename, TEST_DIR "/code_input/%s", name);
         cstr code = readTextFile(filename);
         test_assert_defer(!cstr_empty(&code));
 
-        sprintf(filename, TEST_DIR "/ast/%s.ast", name);
+        cstr nameAst = replaceFilenameExt(name, "ast");
+        sprintf(filename, TEST_DIR "/asttrans/expected/%s", cstr_str(&nameAst));
         cstr expected = readTextFile(filename);
 
         TokenVec tokens = lex(cstr_zv(&code));
@@ -46,7 +40,7 @@ int asttrans_test(void) {
             }
         }
 
-        sprintf(filename, TEST_DIR "/ast_results/%s.ast", name);
+        sprintf(filename, TEST_DIR "/asttrans/results/%s", cstr_str(&nameAst));
         writeTextFile(filename, cstr_sv(&astDump));
         if (!cstr_eq(&expected, &astDump)) {
             fprintf(stderr, "AST doesn't match: %s\n", name);
@@ -55,6 +49,7 @@ int asttrans_test(void) {
 
         DEFER
     }
+    FilenameVec_drop(&names);
     test_assert(ok);
     test_success();
 }

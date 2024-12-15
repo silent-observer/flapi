@@ -1,0 +1,109 @@
+(Program
+  (FnDef
+    [Def]
+    [Ident foo]
+    (FnParamList
+      [LParen]
+      [RParen]
+    )
+    [Arrow]
+    (BaseTypeExpr [I32])
+    _
+    (Block
+      [LCurly]
+      (ExprStmt
+        (IfExpr
+          (IfClause
+            [If]
+            _
+            (Block
+              [LCurly]
+              (ReturnStmt
+                [Return]
+                (LiteralExpr [Decimal 10])
+                [Semi]
+              )
+              [RCurly]
+            )
+          )
+        )
+        _
+      )
+      (ExprStmt
+        (IfExpr
+          (IfClause
+            [If]
+            (BinaryExpr
+              (LiteralExpr [Decimal 5])
+              [Greater]
+              (LiteralExpr [Decimal 10])
+            )
+            (Block
+              [LCurly]
+              (ReturnStmt
+                [Return]
+                (LiteralExpr [Decimal 20])
+                [Semi]
+              )
+              [RCurly]
+            )
+          )
+          (ElseIfClause
+            [Else]
+            [If]
+            _
+            (Block
+              [LCurly]
+              (ReturnStmt
+                [Return]
+                (LiteralExpr [Decimal 30])
+                [Semi]
+              )
+              [RCurly]
+            )
+          )
+        )
+        _
+      )
+      (ExprStmt
+        (WhileExpr
+          [While]
+          _
+          (Block
+            [LCurly]
+            (ReturnStmt
+              [Return]
+              (LiteralExpr [Decimal 40])
+              [Semi]
+            )
+            [RCurly]
+          )
+          _
+        )
+        _
+      )
+      (ExprStmt
+        (WhileExpr
+          [While]
+          (BinaryExpr
+            (LiteralExpr [Decimal 5])
+            [Greater]
+            (LiteralExpr [Decimal 10])
+          )
+          (Block
+            [LCurly]
+            (ReturnStmt
+              [Return]
+              (LiteralExpr [Decimal 50])
+              [Semi]
+            )
+            [RCurly]
+          )
+          _
+        )
+        _
+      )
+      [RCurly]
+    )
+  )
+)

@@ -7,6 +7,4 @@ build/
 
 .vscode
 
-tests/ast_results/*
-tests/cst_results/*
-tests/parse_results/*
+tests/*/results
