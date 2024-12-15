@@ -130,6 +130,7 @@ typedef struct {
 
 typedef struct {
     AstNode *condition;
+    AstNode *elseClause; // Can be NULL if no else clause
     AstChildren body;
 } WhileExprNode;
 

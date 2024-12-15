@@ -879,7 +879,7 @@ static void parseElseClause(Parser *p) {
     closeEvent(p, o, CST_ELSE_CLAUSE);
 }
 
-// WhileExpr(3) = 'while'[0!] SimpleExpr[1E] Block[2]
+// WhileExpr(4) = 'while'[0!] SimpleExpr[1E] Block[2] ElseClause?[3]
 static void parseWhileExpr(Parser *p) {
     assert(at(p, TOKEN_K_WHILE));
     OpenIndex o = openEvent(p);
@@ -894,6 +894,11 @@ static void parseWhileExpr(Parser *p) {
         parseBlock(p); // 2
     else
         skip(p); // 2
+
+    if (at(p, TOKEN_K_ELSE))
+        parseElseClause(p); // 3
+    else
+        skip(p); // 3
 
     closeEvent(p, o, CST_WHILE_EXPR);
 }

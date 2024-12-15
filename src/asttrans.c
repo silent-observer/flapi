@@ -522,11 +522,11 @@ static AstNode *transformIfExpr(AstTransformer *astTrans, CstNode *cst) {
     return n;
 }
 
-// WhileExpr(3) = 'while'[0!] SimpleExpr[1E] Block[2]
+// WhileExpr(4) = 'while'[0!] SimpleExpr[1E] Block[2] ElseClause?[3]
 static AstNode *transformWhileExpr(AstTransformer *astTrans, CstNode *cst) {
     assert(cst);
     assert(cst->kind == CST_WHILE_EXPR);
-    assert(CstChildren_size(&cst->children) == 3);
+    assert(CstChildren_size(&cst->children) == 4);
 
     DEF_NODE(n, AST_WHILE_EXPR);
 
@@ -541,6 +541,13 @@ static AstNode *transformWhileExpr(AstTransformer *astTrans, CstNode *cst) {
         popScope(astTrans);
     } else
         err("expected a body for while loop", at(2));
+
+    if (node_at(3)) {
+        assert(is_node(at(3), CST_ELSE_CLAUSE));
+        n->whileExpr.elseClause = transformElseClause(astTrans, node_at(3));
+    } else {
+        n->whileExpr.elseClause = NULL;
+    }
     return n;
 }
 
