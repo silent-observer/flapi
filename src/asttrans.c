@@ -522,31 +522,38 @@ static AstNode *transformIfExpr(AstTransformer *astTrans, CstNode *cst) {
     return n;
 }
 
-// WhileExpr(4) = 'while'[0!] SimpleExpr[1E] Block[2] ElseClause?[3]
-static AstNode *transformWhileExpr(AstTransformer *astTrans, CstNode *cst) {
+// WhileStmt(4) = 'while'[0!] SimpleExpr[1E] Block[2] ElseClause?[3]
+static AstNode *transformWhileStmt(AstTransformer *astTrans, CstNode *cst) {
     assert(cst);
-    assert(cst->kind == CST_WHILE_EXPR);
+    assert(cst->kind == CST_WHILE_STMT);
     assert(CstChildren_size(&cst->children) == 4);
 
-    DEF_NODE(n, AST_WHILE_EXPR);
+    DEF_NODE(n, AST_WHILE_STMT);
 
     assert(is_token(at(0), TOKEN_K_WHILE));
-    n->whileExpr.condition = node_at(1)
+    n->whileStmt.condition = node_at(1)
                                  ? transformExpr(astTrans, node_at(1))
                                  : make_err("expected a condition", at(1));
     if (node_at(2)) {
         assert(is_node(at(2), CST_BLOCK));
         pushScope(astTrans);
-        transformBlock(astTrans, node_at(2), &n->whileExpr.body);
+        transformBlock(astTrans, node_at(2), &n->whileStmt.body);
         popScope(astTrans);
     } else
         err("expected a body for while loop", at(2));
 
     if (node_at(3)) {
         assert(is_node(at(3), CST_ELSE_CLAUSE));
-        n->whileExpr.elseClause = transformElseClause(astTrans, node_at(3));
-    } else {
-        n->whileExpr.elseClause = NULL;
+        CstNode *elseClause = at(3)->node;
+        CstChild *blockChild = CstChildren_at(&elseClause->children, 1);
+        if (blockChild->kind == CST_CHILD_NODE) {
+            assert(blockChild->node->kind == CST_BLOCK);
+            pushScope(astTrans);
+            transformBlock(astTrans,
+                           blockChild->node,
+                           &n->whileStmt.elseClause);
+            popScope(astTrans);
+        }
     }
     return n;
 }
@@ -722,7 +729,7 @@ static AstNode *transformLambdaExpr(AstTransformer *astTrans, CstNode *cst) {
 
     if (node_at(1)) {
         assert(is_node(at(1), CST_BLOCK));
-        transformBlock(astTrans, node_at(1), &n->whileExpr.body);
+        transformBlock(astTrans, node_at(1), &n->whileStmt.body);
     } else
         err("expected a body for a lambda expression", at(1));
     popScope(astTrans);
@@ -863,6 +870,7 @@ static AstNode *transformExprStmt(AstTransformer *astTrans, CstNode *cst) {
 
     assert(node_at(0));
     n->exprStmt.expr = transformExpr(astTrans, node_at(0));
+    n->exprStmt.canReturn = !is_token(at(0), TOKEN_SEMI);
     return n;
 }
 
@@ -926,20 +934,13 @@ static AstNode *transformReturnStmt(AstTransformer *astTrans, CstNode *cst) {
     return n;
 }
 
-// BreakStmt(3) = 'break'[0!] Expr?[1E] ';'[2]
+// BreakStmt(2) = 'break'[0!] ';'[2]
 static AstNode *transformBreakStmt(AstTransformer *astTrans, CstNode *cst) {
     assert(cst);
     assert(cst->kind == CST_BREAK_STMT);
-    assert(CstChildren_size(&cst->children) == 3);
+    assert(CstChildren_size(&cst->children) == 2);
 
     DEF_NODE(n, AST_BREAK_STMT);
-
-    assert(is_token(at(0), TOKEN_K_BREAK));
-
-    n->breakStmt.expr = node_at(1)
-                            ? transformExpr(astTrans, node_at(1))
-                            : NULL;
-
     return n;
 }
 
@@ -1035,8 +1036,6 @@ static AstNode *transformExpr(AstTransformer *astTrans, CstNode *cst) {
             return transformAssignExpr(astTrans, cst);
         case CST_IF_EXPR:
             return transformIfExpr(astTrans, cst);
-        case CST_WHILE_EXPR:
-            return transformWhileExpr(astTrans, cst);
         case CST_PAREN_EXPR:
             return transformParenExpr(astTrans, cst);
         case CST_UNARY_EXPR:
@@ -1102,6 +1101,9 @@ static void transformBlock(AstTransformer *astTrans, CstNode *cst, AstChildren *
                 break;
             case CST_CONTINUE_STMT:
                 n = transformContinueStmt(astTrans, it.ref->node);
+                break;
+            case CST_WHILE_STMT:
+                n = transformWhileStmt(astTrans, it.ref->node);
                 break;
             default:
                 n = make_err("expected statement", it.ref);

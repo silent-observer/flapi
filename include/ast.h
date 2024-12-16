@@ -17,13 +17,13 @@
     XX(AST_LET_STMT, "LetStmt")                  \
     XX(AST_WITH_STMT, "WithStmt")                \
     XX(AST_RETURN_STMT, "ReturnStmt")            \
+    XX(AST_WHILE_STMT, "WhileStmt")              \
     XX(AST_BREAK_STMT, "BreakStmt")              \
     XX(AST_CONTINUE_STMT, "ContinueStmt")        \
                                                  \
     XX(AST_ASSIGN_EXPR, "AssignExpr")            \
     XX(AST_IF_EXPR, "IfExpr")                    \
     XX(AST_IF_CLAUSE, "IfClause")                \
-    XX(AST_WHILE_EXPR, "WhileExpr")              \
     XX(AST_BINARY_EXPR, "BinaryExpr")            \
     XX(AST_UNARY_EXPR, "UnaryExpr")              \
     XX(AST_CALL_EXPR_CONST, "CallExprConst")     \
@@ -83,6 +83,7 @@ typedef struct {
 
 typedef struct {
     AstNode *expr;
+    b8 canReturn;
 } ExprStmtNode;
 
 typedef struct {
@@ -101,7 +102,6 @@ typedef struct {
 } ReturnNode;
 
 typedef struct {
-    AstNode *expr; // Can be NULL to indicate "break;"
 } BreakNode;
 
 typedef struct {
@@ -132,9 +132,9 @@ typedef struct {
 
 typedef struct {
     AstNode *condition;
-    AstNode *elseClause; // Can be NULL if no else clause
     AstChildren body;
-} WhileExprNode;
+    AstChildren elseClause;
+} WhileStmtNode;
 
 #define BINARY_EXPR_KIND_LIST \
     XX(BINARY_ADD, "+")       \
@@ -247,10 +247,10 @@ struct AstNode {
         ReturnNode returnStmt;
         BreakNode breakStmt;
         ContinueNode continueStmt;
+        WhileStmtNode whileStmt;
         AssignExprNode assignExpr;
         IfExprNode ifExpr;
         IfClauseNode ifClause;
-        WhileExprNode whileExpr;
         BinaryExprNode binaryExpr;
         UnaryExprNode unaryExpr;
         CallExprNode callExpr;

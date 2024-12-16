@@ -46,29 +46,25 @@ Program {
             ]
           }
         }
-        2: ExprStmt {
-          expr: WhileExpr {
-            cond: <ERROR>
-            body: [
-              0: ReturnStmt {
-                expr: IntLiteralExpr(40)
-              }
-            ]
-          }
-        }
-        3: ExprStmt {
-          expr: WhileExpr {
-            cond: BinaryExpr {
-              op: "<"
-              lhs: IntLiteralExpr(5)
-              rhs: IntLiteralExpr(10)
+        2: WhileStmt {
+          cond: <ERROR>
+          body: [
+            0: ReturnStmt {
+              expr: IntLiteralExpr(40)
             }
-            body: [
-              0: ReturnStmt {
-                expr: IntLiteralExpr(50)
-              }
-            ]
+          ]
+        }
+        3: WhileStmt {
+          cond: BinaryExpr {
+            op: "<"
+            lhs: IntLiteralExpr(5)
+            rhs: IntLiteralExpr(10)
           }
+          body: [
+            0: ReturnStmt {
+              expr: IntLiteralExpr(50)
+            }
+          ]
         }
       ]
     }

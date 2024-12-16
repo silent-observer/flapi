@@ -65,41 +65,35 @@
         )
         _
       )
-      (ExprStmt
-        (WhileExpr
-          [While]
-          _
-          (Block
-            [LCurly]
-            (ReturnStmt
-              [Return]
-              (LiteralExpr [Decimal 40])
-              [Semi]
-            )
-            [RCurly]
+      (WhileStmt
+        [While]
+        _
+        (Block
+          [LCurly]
+          (ReturnStmt
+            [Return]
+            (LiteralExpr [Decimal 40])
+            [Semi]
           )
-          _
+          [RCurly]
         )
         _
       )
-      (ExprStmt
-        (WhileExpr
-          [While]
-          (BinaryExpr
-            (LiteralExpr [Decimal 5])
-            [Greater]
-            (LiteralExpr [Decimal 10])
+      (WhileStmt
+        [While]
+        (BinaryExpr
+          (LiteralExpr [Decimal 5])
+          [Greater]
+          (LiteralExpr [Decimal 10])
+        )
+        (Block
+          [LCurly]
+          (ReturnStmt
+            [Return]
+            (LiteralExpr [Decimal 50])
+            [Semi]
           )
-          (Block
-            [LCurly]
-            (ReturnStmt
-              [Return]
-              (LiteralExpr [Decimal 50])
-              [Semi]
-            )
-            [RCurly]
-          )
-          _
+          [RCurly]
         )
         _
       )

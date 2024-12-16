@@ -3,12 +3,16 @@
 
 #include "typeinfer.h"
 
+#define i_TYPE TypeVec, TypeId
+#include <stc/vec.h>
+
 typedef struct {
     Ast *ast;
     SymbolTable *symbols;
     TypeMap *types;
     TypeId functionReturnType;
     TypingErrorVec errors;
+    TypeVec breakStack;
 } TypeInferContext;
 
 void typecheckStmt(TypeInferContext *ctx, AstNode *node);

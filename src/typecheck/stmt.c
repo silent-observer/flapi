@@ -40,11 +40,20 @@ void typecheckReturnStmt(TypeInferContext *ctx, AstNode *node) {
 }
 void typecheckBreakStmt(TypeInferContext *ctx, AstNode *node) {
     assert(node->kind == AST_BREAK_STMT);
-    if (node->breakStmt.expr) {
-        // TODO: unsupported
-        assert(0);
-    }
 }
 void typecheckContinueStmt(TypeInferContext *ctx, AstNode *node) {
     assert(node->kind == AST_CONTINUE_STMT);
+}
+
+void typecheckWhileStmt(TypeInferContext *ctx, AstNode *node) {
+    assert(node->kind == AST_WHILE_STMT);
+    if (node->whileStmt.condition)
+        typecheckExpr(ctx, node->whileStmt.condition,
+                      Type_simple(TYPE_BOOL));
+    c_foreach(it, AstChildren, node->whileStmt.body) {
+        typecheckStmt(ctx, *it.ref);
+    }
+    c_foreach(it, AstChildren, node->whileStmt.elseClause) {
+        typecheckStmt(ctx, *it.ref);
+    }
 }

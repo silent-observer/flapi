@@ -52,33 +52,29 @@ Program : <none> {
             ]
           }
         }
-        2: ExprStmt : <none> {
-          expr: WhileExpr : <none> {
-            cond: <ERROR>
-            body: [
-              0: ReturnStmt : <none> {
-                expr: TypeConvertExpr : i32 {
-                  expr: IntLiteralExpr(40) : <intlit>
-                }
+        2: WhileStmt : <none> {
+          cond: <ERROR>
+          body: [
+            0: ReturnStmt : <none> {
+              expr: TypeConvertExpr : i32 {
+                expr: IntLiteralExpr(40) : <intlit>
               }
-            ]
-          }
-        }
-        3: ExprStmt : <none> {
-          expr: WhileExpr : <none> {
-            cond: BinaryExpr : bool {
-              op: "<"
-              lhs: IntLiteralExpr(5) : <intlit>
-              rhs: IntLiteralExpr(10) : <intlit>
             }
-            body: [
-              0: ReturnStmt : <none> {
-                expr: TypeConvertExpr : i32 {
-                  expr: IntLiteralExpr(50) : <intlit>
-                }
-              }
-            ]
+          ]
+        }
+        3: WhileStmt : <none> {
+          cond: BinaryExpr : bool {
+            op: "<"
+            lhs: IntLiteralExpr(5) : <intlit>
+            rhs: IntLiteralExpr(10) : <intlit>
           }
+          body: [
+            0: ReturnStmt : <none> {
+              expr: TypeConvertExpr : i32 {
+                expr: IntLiteralExpr(50) : <intlit>
+              }
+            }
+          ]
         }
       ]
     }

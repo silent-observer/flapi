@@ -24,6 +24,7 @@
     XX(CST_RETURN_STMT, "ReturnStmt")              \
     XX(CST_BREAK_STMT, "BreakStmt")                \
     XX(CST_CONTINUE_STMT, "ContinueStmt")          \
+    XX(CST_WHILE_STMT, "WhileStmt")                \
     XX(CST_ASSIGN_EXPR, "AssignExpr")              \
     XX(CST_BASE_TYPE_EXPR, "BaseTypeExpr")         \
     XX(CST_GENERIC_PARAM_NAME, "GenericParamName") \
@@ -38,7 +39,6 @@
     XX(CST_IF_CLAUSE, "IfClause")                  \
     XX(CST_ELSE_IF_CLAUSE, "ElseIfClause")         \
     XX(CST_ELSE_CLAUSE, "ElseClause")              \
-    XX(CST_WHILE_EXPR, "WhileExpr")                \
     XX(CST_PAREN_EXPR, "ParenExpr")                \
     XX(CST_BINARY_EXPR, "BinaryExpr")              \
     XX(CST_UNARY_EXPR, "UnaryExpr")                \

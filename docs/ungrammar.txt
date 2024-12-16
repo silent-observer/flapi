@@ -32,6 +32,7 @@ Statement :=
  | ReturnStmt
  | BreakStmt
  | ContinueStmt
+ | WhileStmt
 
 ExprStmt(2) =
    BlocklessExpr[0E] ';'[1]
@@ -41,8 +42,9 @@ VarStmt(5) = 'var'[0!] VarDef[1!] '='[2] Expr[3E] ';'[4]
 WithStmt(5) = 'with'[0!] VarDef[1!] '='[2] Expr[3E] ';'[4]
 VarDef(3) = 'IDENT'[0] (':'[1] TypeExpr[2E])?
 ReturnStmt(3) = 'return'[0!] Expr?[1E] ';'[2]
-BreakStmt(3) = 'break'[0!] Expr?[1E] ';'[2]
+BreakStmt(2) = 'break'[0!] ';'[1]
 ContinueStmt(2) = 'continue'[0!] ';'[1]
+WhileStmt(4) = 'while'[0!] SimpleExpr[1E] Block[2] ElseClause?[3]
 
 TypeExpr :=
    BaseTypeExpr
@@ -77,16 +79,12 @@ Expr := BlocklessExpr | BlockExpr
 BlocklessExpr := SimpleExpr | AssignExpr
 AssignExpr(3) = SimpleExpr[0!E] AssignOp[1!] Expr[2!E]
 AssignOp := '=' | '+=' | '-=' | '*=' | '/=';
-BlockExpr :=
-   IfExpr
- | WhileExpr
+BlockExpr := IfExpr
 
 IfExpr(*) = IfClause[0!] ElseIfClause*[*!] ElseClause?[?!]
 IfClause(3) = 'if'[0!] SimpleExpr[1E] Block[2]
 ElseIfClause(4) = 'else'[0!] 'if'[1] SimpleExpr[2E] Block[3]
 ElseClause(2) = 'else'[0!] Block[1]
-
-WhileExpr(4) = 'while'[0!] SimpleExpr[1E] Block[2] ElseClause?[3]
 
 SimpleExpr = <Pratt Parser> (BinaryExpr(3) = UnaryExpr[0!E] BinaryOp[1!] UnaryExpr[2!E])
     L\R| * / % + - | > >= < <= == != | and or | |>

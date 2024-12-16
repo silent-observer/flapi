@@ -29,31 +29,28 @@
         (LiteralExpr [Decimal 0])
         [Semi]
       )
-      (ExprStmt
-        (WhileExpr
-          [While]
-          (BinaryExpr
-            (VarExpr [Ident i])
-            [Less]
-            (VarExpr [Ident x])
-          )
-          (Block
-            [LCurly]
-            (ExprStmt
-              (AssignExpr
+      (WhileStmt
+        [While]
+        (BinaryExpr
+          (VarExpr [Ident i])
+          [Less]
+          (VarExpr [Ident x])
+        )
+        (Block
+          [LCurly]
+          (ExprStmt
+            (AssignExpr
+              (VarExpr [Ident i])
+              [Equal]
+              (BinaryExpr
                 (VarExpr [Ident i])
-                [Equal]
-                (BinaryExpr
-                  (VarExpr [Ident i])
-                  [Plus]
-                  (LiteralExpr [Decimal 1])
-                )
+                [Plus]
+                (LiteralExpr [Decimal 1])
               )
-              [Semi]
             )
-            [RCurly]
+            [Semi]
           )
-          _
+          [RCurly]
         )
         _
       )

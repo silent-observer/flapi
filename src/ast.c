@@ -197,11 +197,7 @@ static void printReturnStmt(AstPrinter *p, const AstNode *n) {
 static void printBreakStmt(AstPrinter *p, const AstNode *n) {
     assert(n->kind == AST_BREAK_STMT);
     START("BreakStmt");
-    if (n->breakStmt.expr) {
-        ONE("expr", n->breakStmt.expr);
-        END();
-    } else
-        END_EMPTY();
+    END_EMPTY();
 }
 
 static void printContinueStmt(AstPrinter *p, const AstNode *n) {
@@ -253,11 +249,13 @@ static void printIfClause(AstPrinter *p, const AstNode *n) {
     }
 }
 
-static void printWhileExpr(AstPrinter *p, const AstNode *n) {
-    assert(n->kind == AST_WHILE_EXPR);
-    START("WhileExpr");
-    ONE("cond", n->whileExpr.condition);
-    MANY("body", n->whileExpr.body);
+static void printWhileStmt(AstPrinter *p, const AstNode *n) {
+    assert(n->kind == AST_WHILE_STMT);
+    START("WhileStmt");
+    ONE("cond", n->whileStmt.condition);
+    MANY("body", n->whileStmt.body);
+    if (AstChildren_size(&n->whileStmt.elseClause) > 0)
+        MANY("else", n->whileStmt.elseClause);
     END();
 }
 
@@ -433,6 +431,9 @@ static void printNode(AstPrinter *p, const AstNode *n) {
         case AST_CONTINUE_STMT:
             printContinueStmt(p, n);
             break;
+        case AST_WHILE_STMT:
+            printWhileStmt(p, n);
+            break;
         case AST_ASSIGN_EXPR:
             printAssignExpr(p, n);
             break;
@@ -441,9 +442,6 @@ static void printNode(AstPrinter *p, const AstNode *n) {
             break;
         case AST_IF_CLAUSE:
             printIfClause(p, n);
-            break;
-        case AST_WHILE_EXPR:
-            printWhileExpr(p, n);
             break;
         case AST_BINARY_EXPR:
             printBinaryExpr(p, n);

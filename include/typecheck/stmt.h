@@ -9,5 +9,6 @@ void typecheckWithStmt(TypeInferContext *ctx, AstNode *node);
 void typecheckReturnStmt(TypeInferContext *ctx, AstNode *node);
 void typecheckBreakStmt(TypeInferContext *ctx, AstNode *node);
 void typecheckContinueStmt(TypeInferContext *ctx, AstNode *node);
+void typecheckWhileStmt(TypeInferContext *ctx, AstNode *node);
 
 #endif

@@ -13,34 +13,32 @@ Program {
           mutable: true
           init: IntLiteralExpr(0)
         }
-        1: ExprStmt {
-          expr: WhileExpr {
-            cond: BinaryExpr {
-              op: "<="
-              lhs: VarExpr {
-                var: <i@1>
-              }
-              rhs: VarExpr {
-                var: <x@1>
-              }
+        1: WhileStmt {
+          cond: BinaryExpr {
+            op: "<="
+            lhs: VarExpr {
+              var: <i@1>
             }
-            body: [
-              0: ExprStmt {
-                expr: AssignExpr {
+            rhs: VarExpr {
+              var: <x@1>
+            }
+          }
+          body: [
+            0: ExprStmt {
+              expr: AssignExpr {
+                lhs: VarExpr {
+                  var: <i@1>
+                }
+                rhs: BinaryExpr {
+                  op: "+"
                   lhs: VarExpr {
                     var: <i@1>
                   }
-                  rhs: BinaryExpr {
-                    op: "+"
-                    lhs: VarExpr {
-                      var: <i@1>
-                    }
-                    rhs: IntLiteralExpr(1)
-                  }
+                  rhs: IntLiteralExpr(1)
                 }
               }
-            ]
-          }
+            }
+          ]
         }
         2: ReturnStmt {
           expr: VarExpr {

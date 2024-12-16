@@ -9,6 +9,7 @@ TypingErrorVec typeinfer(Ast *ast) {
         .types = &ast->types,
         .functionReturnType = Type_simple(TYPE_NONE),
         .errors = {0},
+        .breakStack = {0},
     };
 
     typecollectProgram(&ctx, ast->root);

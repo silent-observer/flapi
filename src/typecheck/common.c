@@ -95,6 +95,9 @@ void typecheckStmt(TypeInferContext *ctx, AstNode *node) {
         case AST_CONTINUE_STMT:
             typecheckContinueStmt(ctx, node);
             break;
+        case AST_WHILE_STMT:
+            typecheckWhileStmt(ctx, node);
+            break;
         default:
             assert(0);
     }
@@ -107,9 +110,6 @@ void typecheckExpr(TypeInferContext *ctx, AstNode *node, TypeId expected) {
             break;
         case AST_IF_EXPR:
             typecheckIfExpr(ctx, node, expected);
-            break;
-        case AST_WHILE_EXPR:
-            typecheckWhileExpr(ctx, node, expected);
             break;
         case AST_ASSIGN_EXPR:
             typecheckAssignExpr(ctx, node, expected);
@@ -156,9 +156,6 @@ TypeId typeinferExpr(TypeInferContext *ctx, AstNode *node) {
             break;
         case AST_IF_EXPR:
             node->type = typeinferIfExpr(ctx, node);
-            break;
-        case AST_WHILE_EXPR:
-            node->type = typeinferWhileExpr(ctx, node);
             break;
         case AST_ASSIGN_EXPR:
             node->type = typeinferAssignExpr(ctx, node);

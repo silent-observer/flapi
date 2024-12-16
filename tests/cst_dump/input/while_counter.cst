@@ -30,7 +30,7 @@
         [Semi]
       )
       (ExprStmt
-        (WhileExpr
+        (WhileStmt
           [While]
           (BinaryExpr
             (VarExpr [Ident i])

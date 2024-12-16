@@ -64,29 +64,3 @@ TypeId typeinferIfClause(TypeInferContext *ctx, AstNode *node) {
     node->type = Type_simple(TYPE_NONE);
     return Type_isKnown(expected) ? expected : Type_simple(TYPE_NONE);
 }
-
-void typecheckWhileExpr(TypeInferContext *ctx, AstNode *node, TypeId expected) {
-    assert(node->kind == AST_WHILE_EXPR);
-    if (node->whileExpr.condition)
-        typecheckExpr(ctx, node->whileExpr.condition,
-                      Type_simple(TYPE_BOOL));
-    assert(node->whileExpr.elseClause == NULL);
-    c_foreach(it, AstChildren, node->ifClause.body) {
-        typecheckStmt(ctx, *it.ref);
-    }
-    if (expected.id != Type_simple(TYPE_NONE).id) {
-        // TODO: unsupported
-        assert(0);
-    }
-}
-TypeId typeinferWhileExpr(TypeInferContext *ctx, AstNode *node) {
-    assert(node->kind == AST_WHILE_EXPR);
-    if (node->whileExpr.condition)
-        typecheckExpr(ctx, node->whileExpr.condition,
-                      Type_simple(TYPE_BOOL));
-    assert(node->whileExpr.elseClause == NULL);
-    c_foreach(it, AstChildren, node->whileExpr.body) {
-        typecheckStmt(ctx, *it.ref);
-    }
-    return Type_simple(TYPE_NONE);
-}

@@ -66,7 +66,7 @@
         _
       )
       (ExprStmt
-        (WhileExpr
+        (WhileStmt
           [While]
           _
           (Block
@@ -83,7 +83,7 @@
         _
       )
       (ExprStmt
-        (WhileExpr
+        (WhileStmt
           [While]
           (BinaryExpr
             (LiteralExpr [Decimal 5])

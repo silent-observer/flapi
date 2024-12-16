@@ -55,8 +55,8 @@ static inline void i_visit(i_context *ctx, AstNode *n) {
             MANY(n->ifClause.body);
             break;
         case AST_WHILE_EXPR:
-            ONE(n->whileExpr.condition);
-            MANY(n->whileExpr.body);
+            ONE(n->whileStmt.condition);
+            MANY(n->whileStmt.body);
             break;
         case AST_FOR_EXPR:
             ONE(n->forExpr.iterExpr);

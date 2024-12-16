@@ -152,6 +152,7 @@ static void parseVarDef(Parser *p);
 static void parseReturnStmt(Parser *p);
 static void parseBreakStmt(Parser *p);
 static void parseContinueStmt(Parser *p);
+static void parseWhileStmt(Parser *p);
 
 static void parseTypeExpr(Parser *p);
 static void parseGenericParamName(Parser *p);
@@ -169,7 +170,6 @@ static void parseIfExpr(Parser *p);
 static void parseIfClause(Parser *p);
 static void parseElseClause(Parser *p);
 static void parseElseIfClause(Parser *p);
-static void parseWhileExpr(Parser *p);
 
 static ClosedIndex parseSimpleExpr(Parser *p);
 static ClosedIndex parseDelimetedExpr(Parser *p);
@@ -314,10 +314,7 @@ static const KindBitset SIMPLE_EXPR_FIRST =
     KB(TOKEN_STRING) | KB(TOKEN_CHAR) | KB(TOKEN_PIPE) |
     KB(TOKEN_MINUS) | KB(TOKEN_K_NOT);
 
-static const KindBitset EXPR_FIRST =
-    SIMPLE_EXPR_FIRST |
-    KB(TOKEN_K_IF) | KB(TOKEN_K_WHILE);
-
+static const KindBitset EXPR_FIRST = SIMPLE_EXPR_FIRST | KB(TOKEN_K_IF);
 static const KindBitset FN_MODIFIER_LIST_RECOVERY = FN_PARAM_LIST_RECOVERY;
 
 // GivenModifier(*) = 'given'[0!] '('[1] ImplicitClause+[*!E] ')'[?]
@@ -420,6 +417,9 @@ static void parseBlock(Parser *p) {
                 break;
             case TOKEN_K_CONTINUE:
                 parseContinueStmt(p); // *
+                break;
+            case TOKEN_K_WHILE:
+                parseWhileStmt(p); // *
                 break;
             default:
                 if (at_any(p, EXPR_FIRST))
@@ -524,19 +524,13 @@ static void parseReturnStmt(Parser *p) {
     closeEvent(p, o, CST_RETURN_STMT);
 }
 
-// BreakStmt(3) = 'break'[0!] Expr?[1E] ';'[2]
+// BreakStmt(2) = 'break'[0!] ';'[1]
 static void parseBreakStmt(Parser *p) {
     assert(at(p, TOKEN_K_BREAK));
     OpenIndex o = openEvent(p);
 
     expect(p, TOKEN_K_BREAK); // 0
-
-    if (!at(p, TOKEN_SEMI) && !at(p, TOKEN_EOF))
-        parseExpr(p); // 1
-    else
-        skip(p); // 1
-
-    expect(p, TOKEN_SEMI); // 2
+    expect(p, TOKEN_SEMI);    // 1
 
     closeEvent(p, o, CST_BREAK_STMT);
 }
@@ -559,13 +553,15 @@ static void parseExprStmt(Parser *p) {
     OpenIndex o = openEvent(p);
     switch (nth(p, 0)) {
         case TOKEN_K_IF:
-        case TOKEN_K_WHILE:
-            parseBlockExpr(p);
-            skip(p);
+            parseBlockExpr(p); // 0
+            skip(p);           // 1
             break;
         default:
-            parseBlocklessExpr(p);
-            expect(p, TOKEN_SEMI);
+            parseBlocklessExpr(p); // 0
+            if (!at(p, TOKEN_LCURLY))
+                expect(p, TOKEN_SEMI); // 1
+            else
+                skip(p); // 1
             break;
     }
     closeEvent(p, o, CST_EXPR_STMT);
@@ -760,7 +756,6 @@ static void parseTypeArg(Parser *p) {
 static void parseExpr(Parser *p) {
     switch (nth(p, 0)) {
         case TOKEN_K_IF:
-        case TOKEN_K_WHILE:
             parseBlockExpr(p);
             break;
         default:
@@ -790,17 +785,11 @@ static void parseBlocklessExpr(Parser *p) {
     }
 }
 
-// BlockExpr :=
-//   IfExpr
-// | WhileExpr
-// | LoopExpr
+// BlockExpr := IfExpr
 static void parseBlockExpr(Parser *p) {
     switch (nth(p, 0)) {
         case TOKEN_K_IF:
             parseIfExpr(p);
-            break;
-        case TOKEN_K_WHILE:
-            parseWhileExpr(p);
             break;
         default:
             assert(0);
@@ -875,8 +864,8 @@ static void parseElseClause(Parser *p) {
     closeEvent(p, o, CST_ELSE_CLAUSE);
 }
 
-// WhileExpr(4) = 'while'[0!] SimpleExpr[1E] Block[2] ElseClause?[3]
-static void parseWhileExpr(Parser *p) {
+// WhileStmt(4) = 'while'[0!] SimpleExpr[1E] Block[2] ElseClause?[3]
+static void parseWhileStmt(Parser *p) {
     assert(at(p, TOKEN_K_WHILE));
     OpenIndex o = openEvent(p);
 
@@ -896,7 +885,7 @@ static void parseWhileExpr(Parser *p) {
     else
         skip(p); // 3
 
-    closeEvent(p, o, CST_WHILE_EXPR);
+    closeEvent(p, o, CST_WHILE_STMT);
 }
 
 // SimpleExpr :=
