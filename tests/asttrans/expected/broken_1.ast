@@ -96,6 +96,33 @@ Program {
             ]
           }
         }
+        3: LetStmt {
+          var: VarDef <x@4>
+          mutable: false
+          init: IfExpr {
+            clauses: [
+              0: IfClause {
+                cond: BinaryExpr {
+                  op: "<"
+                  lhs: IntLiteralExpr(2)
+                  rhs: IntLiteralExpr(3)
+                }
+                body: [
+                  0: ExprStmt {
+                    pass: IntLiteralExpr(4)
+                  }
+                ]
+              }
+              1: ElseClause {
+                body: [
+                  0: ExprStmt {
+                    pass: IntLiteralExpr(5)
+                  }
+                ]
+              }
+            ]
+          }
+        }
       ]
     }
   ]

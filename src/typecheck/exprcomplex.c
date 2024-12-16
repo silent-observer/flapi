@@ -37,14 +37,26 @@ void typecheckIfClause(TypeInferContext *ctx, AstNode *node, TypeId expected) {
     if (node->ifClause.condition)
         typecheckExpr(ctx, node->ifClause.condition,
                       Type_simple(TYPE_BOOL));
-    c_foreach(it, AstChildren, node->ifClause.body) {
-        if (Ast_isExpr((*it.ref)->kind))
-            typecheckExpr(ctx, *it.ref, expected);
-        else {
-            typecheckStmt(ctx, *it.ref);
+    i32 n = AstChildren_size(&node->ifClause.body);
+    c_forrange(i, 0, AstChildren_size(&node->ifClause.body)) {
+        AstNode *stmt = *AstChildren_at(&node->ifClause.body, i);
+        TypeId result = typecheckStmt(ctx, stmt);
+        if (i == n - 1) {
+            if (result.id == Type_simple(TYPE_NONE).id) {
+                if (expected.id != Type_simple(TYPE_NONE).id) {
+                    cstr t = TypeId_print(ctx->types, expected);
+                    ERROR(stmt->span,
+                          "missing value for an if branch, expected something of type %s",
+                          cstr_str(&t));
+                    cstr_drop(&t);
+                }
+            } else {
+                if (expected.id != Type_simple(TYPE_NONE).id)
+                    typeconvertOrErr(ctx, stmt, expected);
+            }
         }
     }
-    node->type = Type_simple(TYPE_NONE);
+    node->type = expected;
 }
 
 TypeId typeinferIfClause(TypeInferContext *ctx, AstNode *node) {
@@ -53,14 +65,12 @@ TypeId typeinferIfClause(TypeInferContext *ctx, AstNode *node) {
         typecheckExpr(ctx, node->ifClause.condition,
                       Type_simple(TYPE_BOOL));
 
-    TypeId expected = Type_simple(TYPE_UNKNOWN);
-    c_foreach(it, AstChildren, node->ifClause.body) {
-        if (Ast_isExpr((*it.ref)->kind))
-            expected = typeinferExpr(ctx, *it.ref);
-        else {
-            typecheckStmt(ctx, *it.ref);
-        }
+    i32 n = AstChildren_size(&node->ifClause.body);
+    c_forrange(i, 0, AstChildren_size(&node->ifClause.body)) {
+        AstNode *stmt = *AstChildren_at(&node->ifClause.body, i);
+        TypeId result = typecheckStmt(ctx, stmt);
+        if (i == n - 1)
+            node->type = result;
     }
-    node->type = Type_simple(TYPE_NONE);
-    return Type_isKnown(expected) ? expected : Type_simple(TYPE_NONE);
+    return node->type;
 }

@@ -13,4 +13,5 @@ fn main() {
     foo(1, 2);
     bar(3, 4);
     5.baz(6);
+    let x = if 2 > 3 {4} else {5};
 }

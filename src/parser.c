@@ -558,7 +558,7 @@ static void parseExprStmt(Parser *p) {
             break;
         default:
             parseBlocklessExpr(p); // 0
-            if (!at(p, TOKEN_LCURLY))
+            if (!at(p, TOKEN_RCURLY))
                 expect(p, TOKEN_SEMI); // 1
             else
                 skip(p); // 1

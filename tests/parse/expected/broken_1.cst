@@ -173,6 +173,45 @@
         )
         [Semi]
       )
+      (LetStmt
+        [Let]
+        (VarDef
+          [Ident x]
+          _
+          _
+        )
+        [Equal]
+        (IfExpr
+          (IfClause
+            [If]
+            (BinaryExpr
+              (LiteralExpr [Decimal 2])
+              [Greater]
+              (LiteralExpr [Decimal 3])
+            )
+            (Block
+              [LCurly]
+              (ExprStmt
+                (LiteralExpr [Decimal 4])
+                _
+              )
+              [RCurly]
+            )
+          )
+          (ElseClause
+            [Else]
+            (Block
+              [LCurly]
+              (ExprStmt
+                (LiteralExpr [Decimal 5])
+                _
+              )
+              [RCurly]
+            )
+          )
+        )
+        [Semi]
+      )
       [RCurly]
     )
   )

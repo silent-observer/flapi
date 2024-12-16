@@ -100,6 +100,35 @@ Program : <none> {
             ]
           }
         }
+        3: LetStmt : <none> {
+          var: VarDef <x@4> : i64
+          mutable: false
+          init: TypeConvertExpr : i64 {
+            expr: IfExpr : <intlit> {
+              clauses: [
+                0: IfClause : <intlit> {
+                  cond: BinaryExpr : bool {
+                    op: "<"
+                    lhs: IntLiteralExpr(2) : <intlit>
+                    rhs: IntLiteralExpr(3) : <intlit>
+                  }
+                  body: [
+                    0: ExprStmt : <intlit> {
+                      pass: IntLiteralExpr(4) : <intlit>
+                    }
+                  ]
+                }
+                1: ElseClause : <intlit> {
+                  body: [
+                    0: ExprStmt : <intlit> {
+                      pass: IntLiteralExpr(5) : <intlit>
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
       ]
     }
   ]
