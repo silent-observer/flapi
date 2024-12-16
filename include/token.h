@@ -53,13 +53,10 @@
 
 #define TOKEN_KEY_LIST                              \
     XX(TOKEN_K_FN, "Fn", "fn")                      \
-    XX(TOKEN_K_DEF, "Def", "def")                   \
+    XX(TOKEN_K_FN_TYPE, "FnType", "Fn")             \
     XX(TOKEN_K_IF, "If", "if")                      \
     XX(TOKEN_K_ELSE, "Else", "else")                \
-    XX(TOKEN_K_FOR, "For", "for")                   \
-    XX(TOKEN_K_IN, "In", "in")                      \
     XX(TOKEN_K_WHILE, "While", "while")             \
-    XX(TOKEN_K_LOOP, "Loop", "loop")                \
     XX(TOKEN_K_BREAK, "Break", "break")             \
     XX(TOKEN_K_CONTINUE, "Continue", "continue")    \
     XX(TOKEN_K_VAR, "Var", "var")                   \

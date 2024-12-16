@@ -1,6 +1,6 @@
 (Program
   (FnDef
-    [Def]
+    [Fn]
     [Ident foo]
     (FnParamList
       [LParen]
@@ -56,7 +56,7 @@
     )
   )
   (FnDef
-    [Def]
+    [Fn]
     [Ident bar]
     (FnParamList
       [LParen]

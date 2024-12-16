@@ -1,6 +1,6 @@
 (Program
   (FnDef
-    [Def]
+    [Fn]
     [Ident foo]
     (FnParamList
       [LParen]
@@ -37,4 +37,4 @@
 )
 
 ------ ERRORS ------
-Syntax error at (1:17): Expected a function parameter
+Syntax error at (1:16): Expected a function parameter

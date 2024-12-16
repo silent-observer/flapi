@@ -14,7 +14,7 @@ SYMBOLS:
     ( ) [ ] { }
 
 KEYWORDS:
-    fn def if else while loop break continue var let return
+    fn Fn if else while break continue var let return
     and or not
     given interface exec with forward
     true false

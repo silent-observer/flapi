@@ -193,7 +193,7 @@ static void parseProgram(Parser *p) {
     OpenIndex o = openEvent(p);
 
     while (!eof(p)) {
-        if (at(p, TOKEN_K_DEF))
+        if (at(p, TOKEN_K_FN))
             parseFnDef(p); // *
         else
             advanceWithError(p, "Expected a function definition");
@@ -202,14 +202,14 @@ static void parseProgram(Parser *p) {
     closeEvent(p, o, CST_PROGRAM);
 }
 
-// FnDef(7) = 'def'[0!] 'IDENT'[1] FnParamList[2]
+// FnDef(7) = 'fn'[0!] 'IDENT'[1] FnParamList[2]
 //            ('->'[3] TypeExpr[4E])?
 //            FnModifierList?[5] Block[6]
 static void parseFnDef(Parser *p) {
-    assert(at(p, TOKEN_K_DEF));
+    assert(at(p, TOKEN_K_FN));
     OpenIndex o = openEvent(p);
 
-    expect(p, TOKEN_K_DEF); // 0
+    expect(p, TOKEN_K_FN);  // 0
     expect(p, TOKEN_IDENT); // 1
 
     if (at(p, TOKEN_LPAREN))
@@ -238,8 +238,8 @@ static void parseFnDef(Parser *p) {
 static const KindBitset FN_PARAM_LIST_RECOVERY =
     KB(TOKEN_ARROW) | KB(TOKEN_LCURLY) | KB(TOKEN_SEMI) |
     KB(TOKEN_K_IF) | KB(TOKEN_K_ELSE) | KB(TOKEN_K_LET) |
-    KB(TOKEN_K_WHILE) | KB(TOKEN_K_FOR) | KB(TOKEN_K_DEF) |
-    KB(TOKEN_K_RETURN) | KB(TOKEN_K_BREAK) | KB(TOKEN_K_CONTINUE);
+    KB(TOKEN_K_WHILE) | KB(TOKEN_K_FN) | KB(TOKEN_K_RETURN) |
+    KB(TOKEN_K_BREAK) | KB(TOKEN_K_CONTINUE);
 // FnParamList(*) = '('[0!] FnParam*[*!E] ')'[?]
 static void parseFnParamList(Parser *p) {
     assert(at(p, TOKEN_LPAREN));
@@ -304,7 +304,7 @@ static void parseFnModifier(Parser *p) {
 
 static const KindBitset TYPE_EXPR_FIRST =
     KB(TOKEN_IDENT) | KB(TOKEN_PERCENT) | KB(TOKEN_LPAREN) |
-    KB(TOKEN_K_FN) | KB(TOKEN_K_I8) | KB(TOKEN_K_I16) |
+    KB(TOKEN_K_FN_TYPE) | KB(TOKEN_K_I8) | KB(TOKEN_K_I16) |
     KB(TOKEN_K_I32) | KB(TOKEN_K_I64) | KB(TOKEN_K_U8) |
     KB(TOKEN_K_U16) | KB(TOKEN_K_U32) | KB(TOKEN_K_U64) |
     KB(TOKEN_K_STR) | KB(TOKEN_K_CHAR) | KB(TOKEN_K_BOOL);
@@ -316,8 +316,7 @@ static const KindBitset SIMPLE_EXPR_FIRST =
 
 static const KindBitset EXPR_FIRST =
     SIMPLE_EXPR_FIRST |
-    KB(TOKEN_K_IF) | KB(TOKEN_K_WHILE) |
-    KB(TOKEN_K_LOOP) | KB(TOKEN_K_FOR);
+    KB(TOKEN_K_IF) | KB(TOKEN_K_WHILE);
 
 static const KindBitset FN_MODIFIER_LIST_RECOVERY = FN_PARAM_LIST_RECOVERY;
 
@@ -385,7 +384,7 @@ static void parseImplicitClause(Parser *p) {
     closeEvent(p, o, CST_IMPLICIT_CLAUSE);
 }
 
-static const KindBitset BLOCK_RECOVERY = KB(TOKEN_K_DEF);
+static const KindBitset BLOCK_RECOVERY = KB(TOKEN_K_FN);
 
 // Block(*) = '{'[0!] Statement+[*!E] '}'[?]
 // Statement :=
@@ -561,8 +560,6 @@ static void parseExprStmt(Parser *p) {
     switch (nth(p, 0)) {
         case TOKEN_K_IF:
         case TOKEN_K_WHILE:
-        case TOKEN_K_FOR:
-        case TOKEN_K_LOOP:
             parseBlockExpr(p);
             skip(p);
             break;
@@ -616,7 +613,7 @@ static void parseTypeExpr(Parser *p) {
         case TOKEN_IDENT:
             parseCustomTypeExpr(p);
             break;
-        case TOKEN_K_FN:
+        case TOKEN_K_FN_TYPE:
             parseFunctionTypeExpr(p);
             break;
         case TOKEN_LPAREN:
@@ -680,7 +677,7 @@ static void parseGenericArgList(Parser *p) {
 // FunctionTypeExpr(5) = FunctionSpec[0!] TupleTypeExpr[1]
 //                       ('->'[2] TypeExpr[3E])? FnModifierList?[4]
 static void parseFunctionTypeExpr(Parser *p) {
-    assert(at(p, TOKEN_K_FN));
+    assert(at(p, TOKEN_K_FN_TYPE));
     OpenIndex o = openEvent(p);
 
     parseFunctionSpec(p); // 0
@@ -702,12 +699,12 @@ static void parseFunctionTypeExpr(Parser *p) {
     closeEvent(p, o, CST_FUNCTION_TYPE_EXPR);
 }
 
-// FunctionSpec(5) = 'fn'[0!] ('['[1] '1'[2] ('+'[3] | '?'[3])? ']'[4])?
+// FunctionSpec(5) = 'Fn'[0!] ('['[1] '1'[2] ('+'[3] | '?'[3])? ']'[4])?
 static void parseFunctionSpec(Parser *p) {
-    assert(at(p, TOKEN_K_FN));
+    assert(at(p, TOKEN_K_FN_TYPE));
     OpenIndex o = openEvent(p);
 
-    expect(p, TOKEN_K_FN); // 0
+    expect(p, TOKEN_K_FN_TYPE); // 0
     if (at(p, TOKEN_LBRACK)) {
         expect(p, TOKEN_LBRACK);  // 1
         expect(p, TOKEN_DECIMAL); // 2
@@ -764,7 +761,6 @@ static void parseExpr(Parser *p) {
     switch (nth(p, 0)) {
         case TOKEN_K_IF:
         case TOKEN_K_WHILE:
-        case TOKEN_K_LOOP:
             parseBlockExpr(p);
             break;
         default:

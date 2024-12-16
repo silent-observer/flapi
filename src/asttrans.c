@@ -213,7 +213,7 @@ static TypeKind transformFunctionTypeSpec(AstTransformer *astTrans, CstNode *cst
     assert(cst);
     assert(cst->kind == CST_FUNCTION_SPEC);
     assert(CstChildren_size(&cst->children) == 5);
-    assert(is_token(at(0), TOKEN_K_FN));
+    assert(is_token(at(0), TOKEN_K_FN_TYPE));
 
     if (is_token(at(1), TOKEN_LBRACK)) {
         if (!is_token(at(2), TOKEN_DECIMAL) ||
@@ -548,26 +548,6 @@ static AstNode *transformWhileExpr(AstTransformer *astTrans, CstNode *cst) {
     } else {
         n->whileExpr.elseClause = NULL;
     }
-    return n;
-}
-
-// LoopExpr(2) = 'loop'[0!] Block[1]
-static AstNode *transformLoopExpr(AstTransformer *astTrans, CstNode *cst) {
-    assert(cst);
-    assert(cst->kind == CST_LOOP_EXPR);
-    assert(CstChildren_size(&cst->children) == 2);
-
-    DEF_NODE(n, AST_WHILE_EXPR);
-
-    assert(is_token(at(0), TOKEN_K_LOOP));
-    n->whileExpr.condition = NULL;
-    if (node_at(1)) {
-        assert(is_node(at(1), CST_BLOCK));
-        pushScope(astTrans);
-        transformBlock(astTrans, node_at(1), &n->whileExpr.body);
-        popScope(astTrans);
-    } else
-        err("expected a body for while loop", at(1));
     return n;
 }
 
@@ -1060,8 +1040,6 @@ static AstNode *transformExpr(AstTransformer *astTrans, CstNode *cst) {
             return transformIfExpr(astTrans, cst);
         case CST_WHILE_EXPR:
             return transformWhileExpr(astTrans, cst);
-        case CST_LOOP_EXPR:
-            return transformLoopExpr(astTrans, cst);
         case CST_PAREN_EXPR:
             return transformParenExpr(astTrans, cst);
         case CST_UNARY_EXPR:
@@ -1145,7 +1123,7 @@ static AstNode *transformFnDef(AstTransformer *astTrans, CstNode *cst) {
 
     DEF_NODE(n, AST_FN_DEF);
 
-    assert(is_token(at(0), TOKEN_K_DEF));
+    assert(is_token(at(0), TOKEN_K_FN));
 
     n->fnDef.symbol = is_token(at(1), TOKEN_IDENT)
                           ? makeSymbol(astTrans, token_at(1))
@@ -1194,12 +1172,12 @@ static AstNode *transformProgram(AstTransformer *astTrans, CstNode *cst) {
     return n;
 }
 
-// FnDef(7) = 'def'[0!] 'IDENT'[1] FnParamList[2] ('->'[3] TypeExpr[4E])? FnModifierList?[5] Block[6]
+// FnDef(7) = 'fn'[0!] 'IDENT'[1] FnParamList[2] ('->'[3] TypeExpr[4E])? FnModifierList?[5] Block[6]
 static void collectGlobalsFnDef(AstTransformer *astTrans, CstNode *cst) {
     assert(cst);
     assert(cst->kind == CST_FN_DEF);
     assert(CstChildren_size(&cst->children) == 7);
-    assert(is_token(at(0), TOKEN_K_DEF));
+    assert(is_token(at(0), TOKEN_K_FN));
 
     if (is_token(at(1), TOKEN_IDENT))
         makeSymbol(astTrans, token_at(1));

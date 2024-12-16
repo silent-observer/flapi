@@ -14,7 +14,7 @@ Definition :=
  | StructDef
  | EnumDef
 
-FnDef(7) = 'def'[0!] 'IDENT'[1] FnParamList[2] ('->'[3] TypeExpr[4E])? FnModifierList?[5] Block[6]
+FnDef(7) = 'fn'[0!] 'IDENT'[1] FnParamList[2] ('->'[3] TypeExpr[4E])? FnModifierList?[5] Block[6]
 FnParamList(*) = '('[0!] FnParam*[*!E] ')'[?]
 FnParam(5) = 'IDENT'[0!] ':'[1] 'var'?[2] TypeExpr[3!E] ','?[4]
 FnModifierList(*) = FnModifier+[*!]
@@ -68,7 +68,7 @@ CustomTypeExpr(2) = 'IDENT'[0!] GenericArgList?[1]
 GenericArgList(*) = '['[0!] TypeArg+[*!E] ']'[?]
 
 FunctionTypeExpr(5) = FunctionSpec[0!] TupleTypeExpr[1] ('->'[2] TypeExpr[3E])? FnModifierList?[4]
-FunctionSpec(5) = 'fn'[0!] ('['[1] '1'[2] ('+'[3] | '?'[3])? ']'[4])?
+FunctionSpec(5) = 'Fn'[0!] ('['[1] '1'[2] ('+'[3] | '?'[3])? ']'[4])?
 
 TupleTypeExpr(*) = '('[0!] TypeArg*[*!E] ')'[?]
 TypeArg(2) = TypeExpr[0!E] ','?[1]

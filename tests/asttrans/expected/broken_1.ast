@@ -102,11 +102,11 @@ Program {
 }
 
 ------ ERRORS ------
-Syntax error at (1:17): function parameters must be declared with explicit types
-Syntax error at (5:9): function parameters must be declared with explicit types
-Syntax error at (5:12): function parameters must be declared with explicit types
-Syntax error at (9:10): function parameters must be declared with explicit types
-Syntax error at (9:20): expected a function body
+Syntax error at (1:16): function parameters must be declared with explicit types
+Syntax error at (5:8): function parameters must be declared with explicit types
+Syntax error at (5:11): function parameters must be declared with explicit types
+Syntax error at (9:9): function parameters must be declared with explicit types
+Syntax error at (9:19): expected a function body
 Syntax error at (10:5): expected function definition
 Syntax error at (10:12): expected function definition
 Syntax error at (10:13): expected function definition

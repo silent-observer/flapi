@@ -1,6 +1,6 @@
 (Program
   (FnDef
-    [Def]
+    [Fn]
     [Ident foo]
     (FnParamList
       [LParen]
@@ -38,7 +38,7 @@
     )
   )
   (FnDef
-    [Def]
+    [Fn]
     [Ident bar]
     (FnParamList
       [LParen]
@@ -76,7 +76,7 @@
     )
   )
   (FnDef
-    [Def]
+    [Fn]
     [Ident baz]
     (FnParamList
       [LParen]
@@ -107,7 +107,7 @@
   (Error [Ident b])
   (Error [Semi])
   (FnDef
-    [Def]
+    [Fn]
     [Ident main]
     (FnParamList
       [LParen]
@@ -179,16 +179,16 @@
 )
 
 ------ ERRORS ------
-Syntax error at (1:19): Expected ':' but got '{'
-Syntax error at (1:19): Expected a type
-Syntax error at (1:19): Expected ',' but got '{'
-Syntax error at (1:19): Expected ')' but got '{'
-Syntax error at (5:10): Expected ':' but got ','
-Syntax error at (5:10): Expected a type
-Syntax error at (5:13): Expected ':' but got ')'
-Syntax error at (5:13): Expected a type
-Syntax error at (9:11): Expected ':' but got ','
-Syntax error at (9:11): Expected a type
+Syntax error at (1:18): Expected ':' but got '{'
+Syntax error at (1:18): Expected a type
+Syntax error at (1:18): Expected ',' but got '{'
+Syntax error at (1:18): Expected ')' but got '{'
+Syntax error at (5:9): Expected ':' but got ','
+Syntax error at (5:9): Expected a type
+Syntax error at (5:12): Expected ':' but got ')'
+Syntax error at (5:12): Expected a type
+Syntax error at (9:10): Expected ':' but got ','
+Syntax error at (9:10): Expected a type
 Syntax error at (10:5): Expected a function definition
 Syntax error at (10:12): Expected a function definition
 Syntax error at (10:13): Expected a function definition

@@ -39,7 +39,6 @@
     XX(CST_ELSE_IF_CLAUSE, "ElseIfClause")         \
     XX(CST_ELSE_CLAUSE, "ElseClause")              \
     XX(CST_WHILE_EXPR, "WhileExpr")                \
-    XX(CST_LOOP_EXPR, "LoopExpr")                  \
     XX(CST_PAREN_EXPR, "ParenExpr")                \
     XX(CST_BINARY_EXPR, "BinaryExpr")              \
     XX(CST_UNARY_EXPR, "UnaryExpr")                \
