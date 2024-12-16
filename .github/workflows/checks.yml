@@ -24,8 +24,7 @@ jobs:
         with:
           name: test-outputs
           path: |
-            tests/code_results/*
-            tests/cst_results/*
+            tests/*/results/*
   Format-Check:
     name: Format check
     runs-on: ubuntu-latest
