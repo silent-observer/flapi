@@ -174,7 +174,6 @@ typedef struct {
 } BinaryExprNode;
 
 typedef enum {
-    UNARY_PLUS,
     UNARY_NEG,
     UNARY_NOT,
 } UnaryExprKind;

@@ -87,8 +87,6 @@ TypeId typeinferUnaryExpr(TypeInferContext *ctx, AstNode *node) {
                 return Type_simple(TYPE_ERROR);
             }
         }
-        case UNARY_PLUS:
-            assert(0); // TODO: not supported yet
         default:
             assert(0);
     }
@@ -118,8 +116,6 @@ void typecheckUnaryExpr(TypeInferContext *ctx, AstNode *node, TypeId expected) {
                 return;
             }
         }
-        case UNARY_PLUS:
-            assert(0); // TODO: not supported yet
         default:
             assert(0);
     }

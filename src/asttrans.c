@@ -585,7 +585,7 @@ static AstNode *transformParenExpr(AstTransformer *astTrans, CstNode *cst) {
 }
 
 // UnaryExpr(2) = UnaryOp[0!] PostfixExpr[1E]
-// UnaryOp := '+' | '-' | 'not'
+// UnaryOp := '-' | 'not'
 static AstNode *transformUnaryExpr(AstTransformer *astTrans, CstNode *cst) {
     assert(cst);
     assert(cst->kind == CST_UNARY_EXPR);
@@ -600,9 +600,6 @@ static AstNode *transformUnaryExpr(AstTransformer *astTrans, CstNode *cst) {
             break;
         case TOKEN_MINUS:
             n->unaryExpr.kind = UNARY_NEG;
-            break;
-        case TOKEN_PLUS:
-            n->unaryExpr.kind = UNARY_PLUS;
             break;
         default:
             assert(0);

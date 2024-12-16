@@ -312,7 +312,7 @@ static const KindBitset TYPE_EXPR_FIRST =
 static const KindBitset SIMPLE_EXPR_FIRST =
     KB(TOKEN_IDENT) | KB(TOKEN_DECIMAL) | KB(TOKEN_BINARY) |
     KB(TOKEN_STRING) | KB(TOKEN_CHAR) | KB(TOKEN_PIPE) |
-    KB(TOKEN_PLUS) | KB(TOKEN_MINUS) | KB(TOKEN_K_NOT);
+    KB(TOKEN_MINUS) | KB(TOKEN_K_NOT);
 
 static const KindBitset EXPR_FIRST =
     SIMPLE_EXPR_FIRST |
@@ -952,7 +952,6 @@ static ClosedIndex parseDelimetedExpr(Parser *p) {
             expect(p, TOKEN_RPAREN); // 2
             return closeEvent(p, o, CST_PAREN_EXPR);
 
-        case TOKEN_PLUS:
         case TOKEN_MINUS:
         case TOKEN_K_NOT:
             advance(p);                     // 0

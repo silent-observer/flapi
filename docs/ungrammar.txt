@@ -143,7 +143,7 @@ LiteralExpr(1) = // everything is [0]
 VarExpr(1) = 'IDENT'[0!]
 ParenExpr(3) = '('[0!] Expr[1E] ')'[2]
 UnaryExpr(2) = UnaryOp[0!] PostfixExpr[1!]
-UnaryOp := '+' | '-' | 'not'
+UnaryOp := '-' | 'not'
 
 StructDef(3) = 'struct'[0] CustomTypeExpr[1] StructEntryList[2]
 StructEntryList(*) = '{'[0] StructEntry*[*] '}'[?]
