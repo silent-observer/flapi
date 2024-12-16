@@ -870,7 +870,7 @@ static AstNode *transformExprStmt(AstTransformer *astTrans, CstNode *cst) {
 
     assert(node_at(0));
     n->exprStmt.expr = transformExpr(astTrans, node_at(0));
-    n->exprStmt.canReturn = !is_token(at(0), TOKEN_SEMI);
+    n->exprStmt.canReturn = !is_token(at(1), TOKEN_SEMI);
     return n;
 }
 

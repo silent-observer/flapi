@@ -9,8 +9,8 @@ Program : <none> {
       return: ()
       given: []
       body: [
-        0: ExprStmt : <none> {
-          expr: CallExpr : () {
+        0: ExprStmt : () {
+          pass: CallExpr : () {
             fn: VarExpr : fn(i32, i32) -> () {
               var: <bar@0> : fn(i32, i32) -> ()
             }

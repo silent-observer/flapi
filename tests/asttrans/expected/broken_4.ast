@@ -7,7 +7,7 @@ Program {
       given: []
       body: [
         0: ExprStmt {
-          expr: IfExpr {
+          pass: IfExpr {
             clauses: [
               0: IfClause {
                 cond: <ERROR>
@@ -21,7 +21,7 @@ Program {
           }
         }
         1: ExprStmt {
-          expr: IfExpr {
+          pass: IfExpr {
             clauses: [
               0: IfClause {
                 cond: BinaryExpr {

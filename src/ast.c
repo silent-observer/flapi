@@ -157,7 +157,10 @@ static void printFnDef(AstPrinter *p, const AstNode *n) {
 static void printExprStmt(AstPrinter *p, const AstNode *n) {
     assert(n->kind == AST_EXPR_STMT);
     START("ExprStmt");
-    ONE("expr", n->exprStmt.expr);
+    if (n->exprStmt.canReturn)
+        ONE("pass", n->exprStmt.expr);
+    else
+        ONE("expr", n->exprStmt.expr);
     END();
 }
 

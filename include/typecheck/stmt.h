@@ -3,7 +3,7 @@
 
 #include "typecheck/common.h"
 
-void typecheckExprStmt(TypeInferContext *ctx, AstNode *node);
+TypeId typecheckExprStmt(TypeInferContext *ctx, AstNode *node);
 void typecheckLetStmt(TypeInferContext *ctx, AstNode *node);
 void typecheckWithStmt(TypeInferContext *ctx, AstNode *node);
 void typecheckReturnStmt(TypeInferContext *ctx, AstNode *node);

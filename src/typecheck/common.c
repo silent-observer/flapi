@@ -73,12 +73,13 @@ void typeconvertOrErr(TypeInferContext *ctx, AstNode *node, TypeId expected) {
     }
 }
 
-void typecheckStmt(TypeInferContext *ctx, AstNode *node) {
+TypeId typecheckStmt(TypeInferContext *ctx, AstNode *node) {
+    node->type = Type_simple(TYPE_NONE);
     switch (node->kind) {
         case AST_ERROR:
             break;
         case AST_EXPR_STMT:
-            typecheckExprStmt(ctx, node);
+            node->type = typecheckExprStmt(ctx, node);
             break;
         case AST_LET_STMT:
             typecheckLetStmt(ctx, node);
@@ -101,7 +102,7 @@ void typecheckStmt(TypeInferContext *ctx, AstNode *node) {
         default:
             assert(0);
     }
-    node->type = Type_simple(TYPE_NONE);
+    return node->type;
 }
 
 void typecheckExpr(TypeInferContext *ctx, AstNode *node, TypeId expected) {

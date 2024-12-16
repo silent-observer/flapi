@@ -10,7 +10,7 @@ Program {
       given: []
       body: [
         0: ExprStmt {
-          expr: CallExpr {
+          pass: CallExpr {
             fn: VarExpr {
               var: <bar@0>
             }

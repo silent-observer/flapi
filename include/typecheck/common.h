@@ -15,7 +15,7 @@ typedef struct {
     TypeVec breakStack;
 } TypeInferContext;
 
-void typecheckStmt(TypeInferContext *ctx, AstNode *node);
+TypeId typecheckStmt(TypeInferContext *ctx, AstNode *node);
 void typecheckExpr(TypeInferContext *ctx, AstNode *node, TypeId expected);
 TypeId typeinferExpr(TypeInferContext *ctx, AstNode *node);
 b32 typeconvertExpr(TypeInferContext *ctx, AstNode *node, TypeId expected);

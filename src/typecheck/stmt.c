@@ -1,8 +1,12 @@
 #include "typecheck/stmt.h"
 
-void typecheckExprStmt(TypeInferContext *ctx, AstNode *node) {
+TypeId typecheckExprStmt(TypeInferContext *ctx, AstNode *node) {
     assert(node->kind == AST_EXPR_STMT);
-    typeinferExpr(ctx, node->exprStmt.expr);
+    TypeId t = typeinferExpr(ctx, node->exprStmt.expr);
+    if (node->exprStmt.canReturn)
+        return t;
+    else
+        return Type_simple(TYPE_NONE);
 }
 void typecheckLetStmt(TypeInferContext *ctx, AstNode *node) {
     assert(node->kind == AST_LET_STMT);
