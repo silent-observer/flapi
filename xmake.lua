@@ -17,6 +17,7 @@ target("flapi")
     add_includedirs("include")
 
     add_files("src/*.c")
+    add_files("src/typecheck/*.c")
     remove_files("src/*.test.c")
 
 target("test")
@@ -28,6 +29,7 @@ target("test")
     add_defines("TEST_DIR=\"$(projectdir)/tests\"")
 
     add_files("src/*.c")
+    add_files("src/typecheck/*.c")
     remove_files("src/main.c")
 
 --

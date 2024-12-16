@@ -53,6 +53,9 @@ static inline _c_MEMB(__NodeHeader) * _c_MEMB(_allocBlock)(i32 n) {
 }
 
 static inline i_val *_c_MEMB(_new)(i_type *self) {
+    assert(self);
+    assert(self->n > 0);
+
     if (self->freeList) {
         _c_MEMB(__Item) *item = self->freeList;
         self->freeList = item->nextFree;

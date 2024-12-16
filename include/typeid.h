@@ -27,6 +27,7 @@ typedef enum {
     TYPE_STR,
     TYPE_CHAR,
     TYPE_BOOL,
+    TYPE_INTLIT,
 
     TYPE_TUPLE,
 
@@ -67,7 +68,6 @@ const Type *Type_lookup(const TypeMap *tm, TypeId id);
 TypeMap TypeTable_init(void);
 
 cstr TypeId_print(const TypeMap *tm, TypeId id);
-czview TypeId_print_zv(const TypeMap *tm, TypeId id);
 
 static inline TypeId Type_simple(TypeKind kind) {
     assert(kind != TYPE_NAMED && kind != TYPE_GENERIC_PARAM);
@@ -88,6 +88,33 @@ static inline b32 Type_isInteger(TypeId t) {
         case TYPE_U16:
         case TYPE_U32:
         case TYPE_U64:
+        case TYPE_INTLIT:
+            return true;
+        default:
+            return false;
+    }
+}
+
+static inline b32 Type_isSignedInteger(TypeId t) {
+    switch (t.id) {
+        case TYPE_I8:
+        case TYPE_I16:
+        case TYPE_I32:
+        case TYPE_I64:
+        case TYPE_INTLIT:
+            return true;
+        default:
+            return false;
+    }
+}
+
+static inline b32 TypeKind_isFunc(TypeKind t) {
+    switch (t) {
+        case TYPE_FN_GLOBAL:
+        case TYPE_FN_ANY:
+        case TYPE_FN_ONCE:
+        case TYPE_FN_ONCE_OR_MORE:
+        case TYPE_FN_ONCE_OR_ZERO:
             return true;
         default:
             return false;

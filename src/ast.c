@@ -397,6 +397,13 @@ static void printBoolLiteralExpr(AstPrinter *p, const AstNode *n) {
     }
 }
 
+static void printTypeConvertExpr(AstPrinter *p, const AstNode *n) {
+    assert(n->kind == AST_TYPECONVERT_EXPR);
+    START("TypeConvertExpr");
+    ONE("expr", n->typeConvertExpr.expr);
+    END();
+}
+
 static void printNode(AstPrinter *p, const AstNode *n) {
     switch (n->kind) {
         case AST_ERROR:
@@ -474,6 +481,9 @@ static void printNode(AstPrinter *p, const AstNode *n) {
         case AST_BOOL_LITERAL_EXPR:
             printBoolLiteralExpr(p, n);
             break;
+        case AST_TYPECONVERT_EXPR:
+            printTypeConvertExpr(p, n);
+            break;
         default:
             assert(0);
     }
@@ -492,7 +502,9 @@ static void printVarDef(AstPrinter *p, const VarDef *v) {
 }
 
 static void printType(AstPrinter *p, TypeId t) {
-    cstr_append(&p->out, TypeId_print_zv(p->types, t).str);
+    cstr s = TypeId_print(p->types, t);
+    cstr_append_s(&p->out, s);
+    cstr_drop(&s);
 }
 
 cstr printAst(const Ast *ast, b32 printTypes) {

@@ -35,7 +35,9 @@
     XX(AST_INT_LITERAL_EXPR, "IntLiteralExpr")   \
     XX(AST_STR_LITERAL_EXPR, "StrLiteralExpr")   \
     XX(AST_CHAR_LITERAL_EXPR, "CharLiteralExpr") \
-    XX(AST_BOOL_LITERAL_EXPR, "BoolLiteralExpr")
+    XX(AST_BOOL_LITERAL_EXPR, "BoolLiteralExpr") \
+                                                 \
+    XX(AST_TYPECONVERT_EXPR, "TypeConvertExpr")
 
 typedef enum {
 #define XX(kind, name) kind,
@@ -229,6 +231,10 @@ typedef struct {
     b32 val;
 } BoolLiteralExprNode;
 
+typedef struct {
+    AstNode *expr;
+} TypeConvertExprNode;
+
 struct AstNode {
     AstNodeKind kind;
     SourceSpan span;
@@ -258,6 +264,7 @@ struct AstNode {
         StrLiteralExprNode strLiteralExpr;
         CharLiteralExprNode charLiteralExpr;
         BoolLiteralExprNode boolLiteralExpr;
+        TypeConvertExprNode typeConvertExpr;
     };
 };
 

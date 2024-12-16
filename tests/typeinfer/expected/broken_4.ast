@@ -1,0 +1,86 @@
+Program : <none> {
+  fns: [
+    0: FnDef : <none> {
+      name: <foo@0> : fn() -> i32
+      params: []
+      return: i32
+      given: []
+      body: [
+        0: ExprStmt : <none> {
+          expr: IfExpr : <none> {
+            clauses: [
+              0: IfClause : <none> {
+                cond: <ERROR>
+                body: [
+                  0: ReturnStmt : <none> {
+                    expr: TypeConvertExpr : i32 {
+                      expr: IntLiteralExpr(10) : <intlit>
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+        1: ExprStmt : <none> {
+          expr: IfExpr : <none> {
+            clauses: [
+              0: IfClause : <none> {
+                cond: BinaryExpr : bool {
+                  op: "<"
+                  lhs: IntLiteralExpr(5) : <intlit>
+                  rhs: IntLiteralExpr(10) : <intlit>
+                }
+                body: [
+                  0: ReturnStmt : <none> {
+                    expr: TypeConvertExpr : i32 {
+                      expr: IntLiteralExpr(20) : <intlit>
+                    }
+                  }
+                ]
+              }
+              1: IfClause : <none> {
+                cond: <ERROR>
+                body: [
+                  0: ReturnStmt : <none> {
+                    expr: TypeConvertExpr : i32 {
+                      expr: IntLiteralExpr(30) : <intlit>
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+        2: ExprStmt : <none> {
+          expr: WhileExpr : <none> {
+            cond: <ERROR>
+            body: [
+              0: ReturnStmt : <none> {
+                expr: TypeConvertExpr : i32 {
+                  expr: IntLiteralExpr(40) : <intlit>
+                }
+              }
+            ]
+          }
+        }
+        3: ExprStmt : <none> {
+          expr: WhileExpr : <none> {
+            cond: BinaryExpr : bool {
+              op: "<"
+              lhs: IntLiteralExpr(5) : <intlit>
+              rhs: IntLiteralExpr(10) : <intlit>
+            }
+            body: [
+              0: ReturnStmt : <none> {
+                expr: TypeConvertExpr : i32 {
+                  expr: IntLiteralExpr(50) : <intlit>
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

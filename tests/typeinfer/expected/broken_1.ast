@@ -1,0 +1,116 @@
+Program : <none> {
+  fns: [
+    0: FnDef : <none> {
+      name: <foo@0> : fn(i32, <unknown>) -> ()
+      params: [
+        0: VarDef <a@1> : i32
+        1: VarDef <b@1>
+      ]
+      return: ()
+      given: []
+      body: [
+        0: ReturnStmt : <none> {
+          expr: BinaryExpr : <error> {
+            op: "+"
+            lhs: VarExpr : i32 {
+              var: <a@1> : i32
+            }
+            rhs: VarExpr : <unknown> {
+              var: <b@1> : <unknown>
+            }
+          }
+        }
+      ]
+    }
+    1: FnDef : <none> {
+      name: <bar@0> : fn(<unknown>, <unknown>) -> ()
+      params: [
+        0: VarDef <a@2>
+        1: VarDef <b@2>
+      ]
+      return: ()
+      given: []
+      body: [
+        0: ReturnStmt : <none> {
+          expr: BinaryExpr : <error> {
+            op: "+"
+            lhs: VarExpr : <unknown> {
+              var: <a@2> : <unknown>
+            }
+            rhs: VarExpr : <unknown> {
+              var: <b@2> : <unknown>
+            }
+          }
+        }
+      ]
+    }
+    2: FnDef : <none> {
+      name: <baz@0> : fn(<unknown>, i32) -> ()
+      params: [
+        0: VarDef <a@3>
+        1: VarDef <b@3> : i32
+      ]
+      return: ()
+      given: []
+      body: []
+    }
+    3: <ERROR>
+    4: <ERROR>
+    5: <ERROR>
+    6: <ERROR>
+    7: <ERROR>
+    8: FnDef : <none> {
+      name: <main@0> : fn() -> ()
+      params: []
+      return: ()
+      given: []
+      body: [
+        0: ExprStmt : <none> {
+          expr: CallExpr : () {
+            fn: VarExpr : fn(i32, <unknown>) -> () {
+              var: <foo@0> : fn(i32, <unknown>) -> ()
+            }
+            args: [
+              0: TypeConvertExpr : i32 {
+                expr: IntLiteralExpr(1) : <intlit>
+              }
+              1: IntLiteralExpr(2) : <unknown>
+            ]
+          }
+        }
+        1: ExprStmt : <none> {
+          expr: CallExpr : () {
+            fn: VarExpr : fn(<unknown>, <unknown>) -> () {
+              var: <bar@0> : fn(<unknown>, <unknown>) -> ()
+            }
+            args: [
+              0: IntLiteralExpr(3) : <unknown>
+              1: IntLiteralExpr(4) : <unknown>
+            ]
+          }
+        }
+        2: ExprStmt : <none> {
+          expr: CallExprConst : () {
+            name: <baz@0> : fn(<unknown>, i32) -> ()
+            args: [
+              0: IntLiteralExpr(5) : <unknown>
+              1: TypeConvertExpr : i32 {
+                expr: IntLiteralExpr(6) : <intlit>
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+
+------ ERRORS ------
+Type error at (2:5): this function does not return a value
+Type error at (2:12): expected one of ['i8', 'i16', 'i32', 'i64', 'u8', 'u16', 'u32', 'u64'] but got i32 '+' <unknown>
+Type error at (6:5): this function does not return a value
+Type error at (6:12): expected one of ['i8', 'i16', 'i32', 'i64', 'u8', 'u16', 'u32', 'u64'] but got <unknown> '+' <unknown>
+Type error at (13:12): expected type <unknown>, got <intlit>
+Type error at (14:9): expected type <unknown>, got <intlit>
+Type error at (14:12): expected type <unknown>, got <intlit>
+Type error at (15:5): expected type <unknown>, got <intlit>

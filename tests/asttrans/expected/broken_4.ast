@@ -3,7 +3,7 @@ Program {
     0: FnDef {
       name: <foo@0>
       params: []
-      return: ()
+      return: i32
       given: []
       body: [
         0: ExprStmt {

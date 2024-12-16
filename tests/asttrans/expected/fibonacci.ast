@@ -5,7 +5,7 @@ Program {
       params: [
         0: VarDef <x@1> : i32
       ]
-      return: ()
+      return: i32
       given: []
       body: [
         0: ExprStmt {

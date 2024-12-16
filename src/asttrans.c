@@ -1158,7 +1158,7 @@ static AstNode *transformFnDef(AstTransformer *astTrans, CstNode *cst) {
     } else
         err("expected a list of function parameters", at(2));
 
-    if (node_at(3)) {
+    if (token_at(3)) {
         assert(is_token(at(3), TOKEN_ARROW));
         assert(node_at(4));
         n->fnDef.returnType = transformTypeExpr(astTrans, node_at(4));
@@ -1233,6 +1233,7 @@ AstTransformResult astFromCst(Cst *cst) {
 
     collectGlobalsNode(&astTrans, cst->root);
     AstNode *program = transformProgram(&astTrans, cst->root);
+    ast.pool = astTrans.pool;
     ast.root = program;
     ast.symbols = astTrans.symbols;
     ast.types = astTrans.types;

@@ -20,7 +20,7 @@ static TypeId TypeId_build(const Type *t) {
         return (TypeId){.id = c_hash_mix(h, h2)};
     }
     c_foreach(it, TypeChildren, t->children) {
-        u64 h2 = c_hash_n(it.ref, sizeof(*it.ref));
+        u64 h2 = c_hash_n(it.ref, sizeof(*it.ref)) + 42;
         h = c_hash_mix(h, h2);
     }
     return (TypeId){.id = h};
@@ -51,7 +51,7 @@ static const char *const typeNames[] = {
     "<unknown>", "<error>", "<none>", "<drop>",
     "i8", "i16", "i32", "i64",
     "u8", "u16", "u32", "u64",
-    "str", "char", "bool"};
+    "str", "char", "bool", "<intlit>"};
 
 static void printType(const TypeMap *tm, cstr *out, TypeId id) {
     const Type *t = Type_lookup(tm, id);
@@ -71,6 +71,7 @@ static void printType(const TypeMap *tm, cstr *out, TypeId id) {
         case TYPE_STR:
         case TYPE_CHAR:
         case TYPE_BOOL:
+        case TYPE_INTLIT:
             cstr_append(out, typeNames[t->kind]);
             break;
 
@@ -107,19 +108,19 @@ static void printType(const TypeMap *tm, cstr *out, TypeId id) {
         case TYPE_FN_ONCE_OR_MORE:
             switch (t->kind) {
                 case TYPE_FN_GLOBAL:
-                    cstr_append(out, "def");
-                    break;
-                case TYPE_FN_ANY:
                     cstr_append(out, "fn");
                     break;
+                case TYPE_FN_ANY:
+                    cstr_append(out, "Fn");
+                    break;
                 case TYPE_FN_ONCE:
-                    cstr_append(out, "fn[1]");
+                    cstr_append(out, "Fn[1]");
                     break;
                 case TYPE_FN_ONCE_OR_ZERO:
-                    cstr_append(out, "fn[1+]");
+                    cstr_append(out, "Fn[1+]");
                     break;
                 case TYPE_FN_ONCE_OR_MORE:
-                    cstr_append(out, "fn[1?]");
+                    cstr_append(out, "Fn[1?]");
                     break;
                 default:
                     assert(0);
@@ -137,11 +138,4 @@ cstr TypeId_print(const TypeMap *tm, TypeId id) {
     cstr out = cstr_init();
     printType(tm, &out, id);
     return out;
-}
-
-czview TypeId_print_zv(const TypeMap *tm, TypeId id) {
-    static cstr out = {0};
-    cstr_clear(&out);
-    printType(tm, &out, id);
-    return cstr_zv(&out);
 }
