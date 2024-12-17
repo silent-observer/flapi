@@ -2,15 +2,22 @@
 
 void typecheckAssignExpr(TypeInferContext *ctx, AstNode *node, TypeId expected) {
     assert(node->kind == AST_ASSIGN_EXPR);
-    typecheckExpr(ctx, node->assignExpr.lhs, expected);
-    typecheckExpr(ctx, node->assignExpr.rhs, expected);
+    typeinferAssignExpr(ctx, node);
+    if (expected.id != Type_simple(TYPE_NONE).id) {
+        cstr t = TypeId_print(ctx->types, expected);
+        ERROR(node->span,
+              "assignments do not return anything, do not use them "
+              "inside other expressions (expected type %s)",
+              cstr_str(&t));
+        cstr_drop(&t);
+    }
 }
 
 TypeId typeinferAssignExpr(TypeInferContext *ctx, AstNode *node) {
     assert(node->kind == AST_ASSIGN_EXPR);
     TypeId type = typeinferExpr(ctx, node->assignExpr.rhs);
     typecheckExpr(ctx, node->assignExpr.lhs, type);
-    return type;
+    return Type_simple(TYPE_NONE);
 }
 
 void typecheckIfExpr(TypeInferContext *ctx, AstNode *node, TypeId expected) {

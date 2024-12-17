@@ -29,7 +29,7 @@ Program : <none> {
           }
           body: [
             0: ExprStmt : <none> {
-              expr: AssignExpr : i64 {
+              expr: AssignExpr : <none> {
                 lhs: VarExpr : i64 {
                   var: <i@1> : i64
                 }
