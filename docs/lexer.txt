@@ -16,6 +16,7 @@ SYMBOLS:
 KEYWORDS:
     fn Fn if else while break continue var let return
     and or not
-    given interface exec with forward
+    given with
+    type struct anyof make
     true false
     i8 i16 i32 i64 u8 u16 u32 u64 str char bool

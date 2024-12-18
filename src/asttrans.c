@@ -71,6 +71,7 @@ static AstNode *newErrNode(AstTransformer *astTrans, CstNode *c) {
 #define token_at(i) (at(i)->kind == CST_CHILD_TOKEN ? at(i)->token : NULL)
 
 static SymbolId makeSymbol(AstTransformer *astTrans, Token *t) {
+    assert(t);
     assert(t->kind == TOKEN_IDENT);
     assert(!ScopeStack_empty(&astTrans->scopes));
 
@@ -518,6 +519,92 @@ static AstNode *transformIfExpr(AstTransformer *astTrans, CstNode *cst) {
                 assert(0);
         }
         AstChildren_push(&n->ifExpr.clauses, clause);
+    }
+    return n;
+}
+
+// StructInitEntry(4) = 'IDENT'[0!] '='[1] Expr[2!E] ','?[3]
+static AstNode *transformStructInitEntry(AstTransformer *astTrans, CstNode *cst) {
+    assert(cst);
+    assert(cst->kind == CST_STRUCT_INIT_ENTRY);
+    assert(CstChildren_size(&cst->children) == 4);
+
+    DEF_NODE(n, AST_MAKE_STRUCT_ENTRY);
+
+    assert(is_token(at(0), TOKEN_IDENT));
+    n->makeStructEntry.symbol = makeSymbol(astTrans, token_at(0));
+
+    if (is_token(at(1), TOKEN_EQUAL)) {
+        assert(at(2)->kind == CST_CHILD_NODE);
+        n->makeStructEntry.expr = transformExpr(astTrans, at(2)->node);
+    } else {
+        err("struct initializer must have explicitly specified expressions", at(0));
+        n->makeStructEntry.expr = newErr(astTrans, at(0));
+    }
+
+    return n;
+}
+
+// StructInitExpr(*) = '{'[0!] StructInitEntry*[*!E] '}'[?]
+static void transformStructInitExpr(AstTransformer *astTrans, CstNode *cst, AstChildren *list) {
+    assert(cst);
+    assert(cst->kind == CST_STRUCT_INIT_EXPR);
+
+    c_foreach(it, CstChildren, cst->children) {
+        if (it.ref->kind != CST_CHILD_NODE || is_node(it.ref, CST_ERROR))
+            continue;
+        assert(is_node(it.ref, CST_STRUCT_INIT_ENTRY));
+        AstNode *entry = transformStructInitEntry(astTrans, it.ref->node);
+        AstChildren_push(list, entry);
+    }
+}
+
+// AnyOfInitExpr(2) = 'IDENT'[0!] Expr?[1E]
+static AstNode *transformAnyOfInitExpr(AstTransformer *astTrans, CstNode *cst, SymbolId *variant) {
+    assert(cst);
+    assert(cst->kind == CST_ANYOF_INIT_EXPR);
+    assert(CstChildren_size(&cst->children) == 2);
+
+    assert(is_token(at(0), TOKEN_IDENT));
+    *variant = makeSymbol(astTrans, token_at(0));
+
+    if (node_at(1)) {
+        return transformExpr(astTrans, node_at(1));
+    } else {
+        return NULL;
+    }
+}
+
+// MakeExpr(3) = 'make'[0!] CustomTypeExpr[1] (StructInitExpr | AnyOfInitExpr)[2]
+static AstNode *transformMakeExpr(AstTransformer *astTrans, CstNode *cst) {
+    assert(cst);
+    assert(cst->kind == CST_MAKE_EXPR);
+    assert(CstChildren_size(&cst->children) == 3);
+
+    DEF_NODE(n, AST_MAKE_STRUCT_EXPR);
+
+    assert(is_token(at(0), TOKEN_K_MAKE));
+
+    if (!node_at(2)) {
+        err_n("expected a make expression", cst);
+        return newErrNode(astTrans, cst);
+    }
+
+    switch (node_at(2)->kind) {
+        case CST_STRUCT_INIT_EXPR:
+            n->kind = AST_MAKE_STRUCT_EXPR;
+            n->makeStructExpr.type = transformTypeExpr(astTrans, node_at(1));
+            transformStructInitExpr(astTrans, node_at(2), &n->makeStructExpr.entries);
+            break;
+
+        case CST_ANYOF_INIT_EXPR:
+            n->kind = AST_MAKE_ANYOF_EXPR;
+            n->makeAnyOfExpr.type = transformTypeExpr(astTrans, node_at(1));
+            n->makeAnyOfExpr.expr = transformAnyOfInitExpr(astTrans, node_at(2), &n->makeAnyOfExpr.variant);
+            break;
+
+        default:
+            assert(0);
     }
     return n;
 }
@@ -1054,6 +1141,8 @@ static AstNode *transformExpr(AstTransformer *astTrans, CstNode *cst) {
             return transformVarExpr(astTrans, cst);
         case CST_LITERAL_EXPR:
             return transformLiteralExpr(astTrans, cst);
+        case CST_MAKE_EXPR:
+            return transformMakeExpr(astTrans, cst);
         default:
             err_n("expected expression", cst);
             return newErrNode(astTrans, cst);
@@ -1157,15 +1246,214 @@ static AstNode *transformFnDef(AstTransformer *astTrans, CstNode *cst) {
     return n;
 }
 
+// TypeDefParam(2) = TypeDefParamSpec[0!] ','?[1]
+// TypeDefParamSpec := GenericParamName
+static AstNode *transformTypeDefParam(AstTransformer *astTrans, CstNode *cst) {
+    assert(cst);
+    assert(cst->kind == CST_TYPE_DEF);
+    assert(CstChildren_size(&cst->children) == 2);
+
+    DEF_NODE(n, AST_TYPE_DEF_PARAM);
+
+    assert(node_at(0));
+
+    switch (node_at(0)->kind) {
+        case CST_GENERIC_PARAM_NAME:
+            n->typeDefParam.param = transformGenericParamName(astTrans, node_at(0));
+            break;
+        default:
+            assert(0);
+    }
+
+    return n;
+}
+
+// TypeDefParamList(*) = '['[0!] TypeDefParam+[*!E] ']'[?]
+static void transformTypeDefParamList(AstTransformer *astTrans, CstNode *cst, AstChildren *typeParams) {
+    assert(cst);
+    assert(cst->kind == CST_TYPE_DEF_PARAM_LIST);
+
+    c_foreach(it, CstChildren, cst->children) {
+        if (it.ref->kind != CST_CHILD_NODE || is_node(it.ref, CST_ERROR))
+            continue;
+        assert(is_node(it.ref, CST_TYPE_DEF_PARAM));
+        AstNode *param = transformTypeDefParam(astTrans, it.ref->node);
+        AstChildren_push(typeParams, param);
+    }
+}
+
+// TypeDefName(2) = 'IDENT'[0] TypeDefParamList?[1]
+static void transformTypeDefName(AstTransformer *astTrans, CstNode *cst, AstNode *typeDef) {
+    assert(cst);
+    assert(cst->kind == CST_TYPE_DEF_NAME);
+    assert(CstChildren_size(&cst->children) == 2);
+
+    if (is_token(at(0), TOKEN_IDENT))
+        typeDef->typeDef.name = makeSymbol(astTrans, token_at(0));
+    else
+        typeDef->typeDef.name = NO_SYMBOL_ID;
+
+    if (node_at(1)) {
+        assert(is_node(at(1), CST_TYPE_DEF_PARAM_LIST));
+        transformTypeDefParamList(astTrans, node_at(1), &typeDef->typeDef.typeParams);
+    }
+}
+
+// StructEntry(4) = 'IDENT'[0!] ':'[1] Type[2] ','?[3]
+static VarDef transformStructEntry(AstTransformer *astTrans, CstNode *cst) {
+    assert(cst);
+    assert(cst->kind == CST_STRUCT_ENTRY);
+    assert(CstChildren_size(&cst->children) == 4);
+
+    VarDef v;
+    v.span = cst->span;
+
+    assert(is_token(at(0), TOKEN_IDENT));
+    v.symbol = makeSymbol(astTrans, token_at(0));
+
+    if (is_token(at(1), TOKEN_COLON)) {
+        assert(at(2)->kind == CST_CHILD_NODE);
+        v.type = transformTypeExpr(astTrans, node_at(2));
+    } else {
+        err("struct fields must be declared with explicit types", at(0));
+        v.type = Type_simple(TYPE_UNKNOWN);
+    }
+
+    return v;
+}
+
+// StructEntryList(*) = '{'[0!] StructEntry*[*] '}'[?]
+static void transformStructEntryList(AstTransformer *astTrans, CstNode *cst, VarDefVec *list) {
+    assert(cst);
+    assert(cst->kind == CST_STRUCT_ENTRY_LIST);
+
+    c_foreach(it, CstChildren, cst->children) {
+        if (it.ref->kind != CST_CHILD_NODE || is_node(it.ref, CST_ERROR))
+            continue;
+        assert(is_node(it.ref, CST_STRUCT_ENTRY));
+        VarDef entry = transformStructEntry(astTrans, it.ref->node);
+        VarDefVec_push(list, entry);
+    }
+}
+
+// StructDef(2) = 'struct'[0!] StructEntryList[1]
+static AstNode *transformStructDef(AstTransformer *astTrans, CstNode *cst) {
+    assert(cst);
+    assert(cst->kind == CST_STRUCT_DEF);
+    assert(CstChildren_size(&cst->children) == 2);
+
+    DEF_NODE(n, AST_STRUCT_DEF);
+
+    pushScope(astTrans);
+    n->structDef.scope = *ScopeStack_top(&astTrans->scopes);
+    if (node_at(1))
+        transformStructEntryList(astTrans, node_at(1), &n->structDef.fields);
+    popScope(astTrans);
+    return n;
+}
+
+// AnyOfEntry(4) = 'IDENT'[0!] (':'[1] Type[2])? ','?[3]
+static VarDef transformAnyOfEntry(AstTransformer *astTrans, CstNode *cst) {
+    assert(cst);
+    assert(cst->kind == CST_ANYOF_ENTRY);
+    assert(CstChildren_size(&cst->children) == 4);
+
+    VarDef v;
+    v.span = cst->span;
+
+    assert(is_token(at(0), TOKEN_IDENT));
+    v.symbol = makeSymbol(astTrans, token_at(0));
+
+    if (is_token(at(1), TOKEN_COLON)) {
+        assert(at(2)->kind == CST_CHILD_NODE);
+        v.type = transformTypeExpr(astTrans, node_at(2));
+    } else {
+        v.type = Type_simple(TYPE_NONE);
+    }
+
+    return v;
+}
+
+// AnyOfEntryList(*) = '{'[0!] AnyOfEntry*[*] '}'[?]
+static void transformAnyOfEntryList(AstTransformer *astTrans, CstNode *cst, VarDefVec *list) {
+    assert(cst);
+    assert(cst->kind == CST_ANYOF_ENTRY_LIST);
+
+    c_foreach(it, CstChildren, cst->children) {
+        if (it.ref->kind != CST_CHILD_NODE || is_node(it.ref, CST_ERROR))
+            continue;
+        assert(is_node(it.ref, CST_ANYOF_ENTRY));
+        VarDef entry = transformAnyOfEntry(astTrans, it.ref->node);
+        VarDefVec_push(list, entry);
+    }
+}
+
+// AnyOfDef(2) = 'anyof'[0!] AnyOfEntryList[1]
+static AstNode *transformAnyOfDef(AstTransformer *astTrans, CstNode *cst) {
+    assert(cst);
+    assert(cst->kind == CST_ANYOF_DEF);
+    assert(CstChildren_size(&cst->children) == 2);
+
+    DEF_NODE(n, AST_ANYOF_DEF);
+
+    pushScope(astTrans);
+    n->anyOfDef.scope = *ScopeStack_top(&astTrans->scopes);
+    if (node_at(1))
+        transformAnyOfEntryList(astTrans, node_at(1), &n->anyOfDef.variants);
+    popScope(astTrans);
+    return n;
+}
+
+// TypeDef(4) = 'type'[0!] TypeDefName[1!] '='[2] (StructDef | AnyOfDef)[3]
+static AstNode *transformTypeDef(AstTransformer *astTrans, CstNode *cst) {
+    assert(cst);
+    assert(cst->kind == CST_TYPE_DEF);
+    DEF_NODE(n, AST_TYPE_DEF);
+
+    assert(is_token(at(0), TOKEN_K_TYPE));
+
+    transformTypeDefName(astTrans, node_at(1), n);
+
+    if (!node_at(3)) {
+        n->typeDef.def = newErr(astTrans, at(3));
+        return n;
+    }
+
+    switch (node_at(3)->kind) {
+        case CST_STRUCT_DEF:
+            n->typeDef.def = transformStructDef(astTrans, node_at(3));
+            break;
+        case CST_ANYOF_DEF:
+            n->typeDef.def = transformAnyOfDef(astTrans, node_at(3));
+            break;
+        default:
+            n->typeDef.def = newErrNode(astTrans, node_at(3));
+            break;
+    }
+    return n;
+}
+
 static AstNode *transformProgram(AstTransformer *astTrans, CstNode *cst) {
     assert(cst);
     assert(cst->kind == CST_PROGRAM);
     DEF_NODE(n, AST_PROGRAM);
 
     c_foreach(it, CstChildren, cst->children) {
-        AstNode *new = is_node(it.ref, CST_FN_DEF)
-                           ? transformFnDef(astTrans, it.ref->node)
-                           : make_err("expected function definition", it.ref);
+        if (it.ref->kind != CST_CHILD_NODE)
+            continue;
+
+        AstNode *new;
+        switch (it.ref->node->kind) {
+            case CST_FN_DEF:
+                new = transformFnDef(astTrans, it.ref->node);
+                break;
+            case CST_TYPE_DEF:
+                new = transformTypeDef(astTrans, it.ref->node);
+                break;
+            default:
+                new = make_err("expected function definition", it.ref);
+                break;
+        }
         AstChildren_push(&n->program.children, new);
     }
     return n;

@@ -170,6 +170,10 @@ static void parseIfExpr(Parser *p);
 static void parseIfClause(Parser *p);
 static void parseElseClause(Parser *p);
 static void parseElseIfClause(Parser *p);
+static void parseMakeExpr(Parser *p);
+static void parseStructInitExpr(Parser *p);
+static void parseStructInitEntry(Parser *p);
+static void parseAnyOfInitExpr(Parser *p);
 
 static ClosedIndex parseSimpleExpr(Parser *p);
 static ClosedIndex parseDelimetedExpr(Parser *p);
@@ -184,6 +188,14 @@ static void parseLambdaParamList(Parser *p);
 static void parseLambdaParam(Parser *p);
 static ClosedIndex parseIndexOp(Parser *p, ClosedIndex lhs);
 
+static void parseTypeDef(Parser *p);
+static void parseStructDef(Parser *p);
+static void parseStructEntryList(Parser *p);
+static void parseStructEntry(Parser *p);
+static void parseAnyOfDef(Parser *p);
+static void parseAnyOfEntryList(Parser *p);
+static void parseAnyOfEntry(Parser *p);
+
 // Program(*) = Definition*[*!E]
 // Definition :=
 //   FnDef
@@ -195,6 +207,8 @@ static void parseProgram(Parser *p) {
     while (!eof(p)) {
         if (at(p, TOKEN_K_FN))
             parseFnDef(p); // *
+        else if (at(p, TOKEN_K_TYPE))
+            parseTypeDef(p); // *
         else
             advanceWithError(p, "Expected a function definition");
     }
@@ -236,7 +250,7 @@ static void parseFnDef(Parser *p) {
 }
 
 static const KindBitset FN_PARAM_LIST_RECOVERY =
-    KB(TOKEN_ARROW) | KB(TOKEN_LCURLY) | KB(TOKEN_SEMI) |
+    KB(TOKEN_LCURLY) | KB(TOKEN_SEMI) |
     KB(TOKEN_K_IF) | KB(TOKEN_K_ELSE) | KB(TOKEN_K_LET) |
     KB(TOKEN_K_WHILE) | KB(TOKEN_K_FN) | KB(TOKEN_K_RETURN) |
     KB(TOKEN_K_BREAK) | KB(TOKEN_K_CONTINUE);
@@ -314,7 +328,7 @@ static const KindBitset SIMPLE_EXPR_FIRST =
     KB(TOKEN_STRING) | KB(TOKEN_CHAR) | KB(TOKEN_PIPE) |
     KB(TOKEN_MINUS) | KB(TOKEN_K_NOT);
 
-static const KindBitset EXPR_FIRST = SIMPLE_EXPR_FIRST | KB(TOKEN_K_IF);
+static const KindBitset EXPR_FIRST = SIMPLE_EXPR_FIRST | KB(TOKEN_K_IF) | KB(TOKEN_K_MAKE);
 static const KindBitset FN_MODIFIER_LIST_RECOVERY = FN_PARAM_LIST_RECOVERY;
 
 // GivenModifier(*) = 'given'[0!] '('[1] ImplicitClause+[*!E] ')'[?]
@@ -381,7 +395,7 @@ static void parseImplicitClause(Parser *p) {
     closeEvent(p, o, CST_IMPLICIT_CLAUSE);
 }
 
-static const KindBitset BLOCK_RECOVERY = KB(TOKEN_K_FN);
+static const KindBitset BLOCK_RECOVERY = KB(TOKEN_K_FN) | KB(TOKEN_K_TYPE);
 
 // Block(*) = '{'[0!] Statement+[*!E] '}'[?]
 // Statement :=
@@ -553,6 +567,7 @@ static void parseExprStmt(Parser *p) {
     OpenIndex o = openEvent(p);
     switch (nth(p, 0)) {
         case TOKEN_K_IF:
+        case TOKEN_K_MAKE:
             parseBlockExpr(p); // 0
             skip(p);           // 1
             break;
@@ -756,6 +771,7 @@ static void parseTypeArg(Parser *p) {
 static void parseExpr(Parser *p) {
     switch (nth(p, 0)) {
         case TOKEN_K_IF:
+        case TOKEN_K_MAKE:
             parseBlockExpr(p);
             break;
         default:
@@ -785,11 +801,14 @@ static void parseBlocklessExpr(Parser *p) {
     }
 }
 
-// BlockExpr := IfExpr
+// BlockExpr := IfExpr | MakeExpr
 static void parseBlockExpr(Parser *p) {
     switch (nth(p, 0)) {
         case TOKEN_K_IF:
             parseIfExpr(p);
+            break;
+        case TOKEN_K_MAKE:
+            parseMakeExpr(p);
             break;
         default:
             assert(0);
@@ -862,6 +881,85 @@ static void parseElseClause(Parser *p) {
         skip(p); // 1
 
     closeEvent(p, o, CST_ELSE_CLAUSE);
+}
+
+// MakeExpr(3) = 'make'[0!] CustomTypeExpr[1] (StructInitExpr | AnyOfInitExpr)[2]
+static void parseMakeExpr(Parser *p) {
+    assert(at(p, TOKEN_K_MAKE));
+    OpenIndex o = openEvent(p);
+
+    expect(p, TOKEN_K_MAKE); // 0
+    if (at(p, TOKEN_IDENT))
+        parseCustomTypeExpr(p); // 1
+    else
+        skip(p); // 1
+
+    if (at(p, TOKEN_LCURLY))
+        parseStructInitExpr(p); // 2
+    else if (at(p, TOKEN_IDENT))
+        parseAnyOfInitExpr(p); // 2
+    else {
+        pushError(p, "Expected a struct or anyof initializer");
+        skip(p); // 2
+    }
+
+    closeEvent(p, o, CST_MAKE_EXPR);
+}
+
+// StructInitExpr(*) = '{'[0!] StructInitEntry*[*!E] '}'[?]
+static void parseStructInitExpr(Parser *p) {
+    assert(at(p, TOKEN_LCURLY));
+    OpenIndex o = openEvent(p);
+
+    expect(p, TOKEN_LCURLY); // 0
+    while (!at(p, TOKEN_RCURLY) && !at(p, TOKEN_EOF)) {
+        if (at(p, TOKEN_IDENT))
+            parseStructInitEntry(p); // *
+        else {
+            if (at_any(p, BLOCK_RECOVERY))
+                break;
+            advanceWithError(p, "Expected an struct field initializer");
+        }
+    }
+    expect(p, TOKEN_RCURLY); // ?
+
+    closeEvent(p, o, CST_STRUCT_INIT_EXPR);
+}
+
+// StructInitEntry(4) = 'IDENT'[0!] '='[1] Expr[2!E] ','?[3]
+static void parseStructInitEntry(Parser *p) {
+    assert(at(p, TOKEN_IDENT));
+    OpenIndex o = openEvent(p);
+
+    expect(p, TOKEN_IDENT);    // 0
+    if (eat(p, TOKEN_EQUAL)) { // 1
+        if (at_any(p, EXPR_FIRST))
+            parseExpr(p); // 2
+        else
+            skip(p); // 2
+    } else
+        skip(p); // 2
+
+    if (!at(p, TOKEN_RCURLY))
+        expect(p, TOKEN_COMMA); // 3
+    else
+        eat(p, TOKEN_COMMA); // 3
+
+    closeEvent(p, o, CST_STRUCT_INIT_ENTRY);
+}
+
+// AnyOfInitExpr(2) = 'IDENT'[0!] Expr?[1E]
+static void parseAnyOfInitExpr(Parser *p) {
+    assert(at(p, TOKEN_IDENT));
+    OpenIndex o = openEvent(p);
+
+    expect(p, TOKEN_IDENT); // 0
+    if (at_any(p, EXPR_FIRST))
+        parseExpr(p); // 1
+    else
+        skip(p); // 1
+
+    closeEvent(p, o, CST_ANYOF_INIT_EXPR);
 }
 
 // WhileStmt(4) = 'while'[0!] SimpleExpr[1E] Block[2] ElseClause?[3]
@@ -1228,6 +1326,189 @@ static ClosedIndex parseIndexOp(Parser *p, ClosedIndex lhs) {
     expect(p, TOKEN_RBRACK); // 3
 
     return closeEvent(p, o, CST_INDEX_EXPR);
+}
+
+// TypeDefParam(2) = TypeDefParamSpec[0!] ','?[1]
+// TypeDefParamSpec := GenericParamName
+static void parseTypeDefParam(Parser *p) {
+    OpenIndex o = openEvent(p);
+
+    switch (nth(p, 0)) {
+        case TOKEN_PERCENT:
+            parseGenericParamName(p); // 0
+            break;
+        default:
+            advanceWithError(p, "Expected a generic parameter for the type definition");
+    }
+
+    if (!at(p, TOKEN_RPAREN))
+        expect(p, TOKEN_COMMA); // 1
+    else
+        skip(p); // 1
+
+    closeEvent(p, o, CST_TYPE_DEF_PARAM);
+}
+
+static const KindBitset TYPE_DEF_PARAM_LIST_RECOVERY = FN_PARAM_LIST_RECOVERY;
+static const KindBitset STRUCT_LIST_RECOVERY =
+    KB(TOKEN_SEMI) | KB(TOKEN_K_WITH) |
+    KB(TOKEN_K_IF) | KB(TOKEN_K_ELSE) | KB(TOKEN_K_LET) |
+    KB(TOKEN_K_VAR) | KB(TOKEN_K_WHILE) | KB(TOKEN_K_FN) |
+    KB(TOKEN_K_RETURN) | KB(TOKEN_K_BREAK) | KB(TOKEN_K_CONTINUE);
+
+// TypeDefParamList(*) = '['[0!] TypeDefParam+[*!E] ']'[?]
+static void parseTypeDefParamList(Parser *p) {
+    assert(at(p, TOKEN_LBRACK));
+    OpenIndex o = openEvent(p);
+
+    expect(p, TOKEN_LBRACK); // 0
+    while (!at(p, TOKEN_RBRACK) && !at(p, TOKEN_EOF)) {
+        if (at(p, TOKEN_PERCENT))
+            parseTypeDefParam(p); // *
+        else {
+            if (at_any(p, TYPE_DEF_PARAM_LIST_RECOVERY))
+                break;
+            advanceWithError(p, "Expected a generic parameter for the type definition");
+        }
+    }
+    expect(p, TOKEN_RBRACK); // ?
+
+    closeEvent(p, o, CST_FN_PARAM_LIST);
+}
+
+// TypeDefName(2) = 'IDENT'[0] TypeDefParamList?[1]
+static void parseTypeDefName(Parser *p) {
+    OpenIndex o = openEvent(p);
+
+    expect(p, TOKEN_IDENT); // 0
+    if (at(p, TOKEN_LBRACK))
+        parseTypeDefParamList(p); // 1
+    else
+        skip(p);
+
+    closeEvent(p, o, CST_TYPE_DEF_NAME);
+}
+
+// TypeDef(4) = 'type'[0!] TypeDefName[1!] '='[2] (StructDef | AnyOfDef)[3]
+static void parseTypeDef(Parser *p) {
+    assert(at(p, TOKEN_K_TYPE));
+    OpenIndex o = openEvent(p);
+
+    expect(p, TOKEN_K_TYPE); // 0
+    parseTypeDefName(p);     // 1
+    expect(p, TOKEN_EQUAL);  // 2
+    if (at(p, TOKEN_K_STRUCT))
+        parseStructDef(p); // 3
+    else if (at(p, TOKEN_K_ANYOF))
+        parseAnyOfDef(p); // 3
+    else {
+        pushError(p, "Expected a type definition (struct or anyof)");
+        skip(p); // 3
+    }
+
+    closeEvent(p, o, CST_TYPE_DEF);
+}
+
+// StructDef(2) = 'struct'[0!] StructEntryList[1]
+static void parseStructDef(Parser *p) {
+    assert(at(p, TOKEN_K_STRUCT));
+    OpenIndex o = openEvent(p);
+    expect(p, TOKEN_K_STRUCT); // 0
+
+    if (at(p, TOKEN_LCURLY))
+        parseStructEntryList(p); // 1
+    else
+        skip(p); // 1
+    closeEvent(p, o, CST_STRUCT_DEF);
+}
+
+// StructEntryList(*) = '{'[0] StructEntry*[*] '}'[?]
+static void parseStructEntryList(Parser *p) {
+    assert(at(p, TOKEN_LCURLY));
+    OpenIndex o = openEvent(p);
+
+    expect(p, TOKEN_LCURLY); // 0
+    while (!at(p, TOKEN_RCURLY) && !at(p, TOKEN_EOF)) {
+        if (at(p, TOKEN_IDENT))
+            parseStructEntry(p); // *
+        else {
+            if (at_any(p, STRUCT_LIST_RECOVERY))
+                break;
+            advanceWithError(p, "Expected a struct field");
+        }
+    }
+    expect(p, TOKEN_RCURLY); // ?
+
+    closeEvent(p, o, CST_STRUCT_ENTRY_LIST);
+}
+
+// StructEntry(4) = 'IDENT'[0!] ':'[1] Type[2] ','?[3]
+static void parseStructEntry(Parser *p) {
+    assert(at(p, TOKEN_IDENT));
+    OpenIndex o = openEvent(p);
+
+    expect(p, TOKEN_IDENT); // 0
+    expect(p, TOKEN_COLON); // 1
+
+    parseTypeExpr(p); // 2
+    if (!at(p, TOKEN_RCURLY))
+        expect(p, TOKEN_COMMA); // 3
+    else
+        skip(p); // 3
+
+    closeEvent(p, o, CST_STRUCT_ENTRY);
+}
+
+// AnyOfDef(2) = 'anyof'[0!] AnyOfEntryList[1]
+static void parseAnyOfDef(Parser *p) {
+    assert(at(p, TOKEN_K_ANYOF));
+    OpenIndex o = openEvent(p);
+    expect(p, TOKEN_K_ANYOF); // 0
+
+    if (at(p, TOKEN_LCURLY))
+        parseAnyOfEntryList(p); // 1
+    else
+        skip(p); // 1
+    closeEvent(p, o, CST_ANYOF_DEF);
+}
+
+// AnyOfEntryList(*) = '{'[0] AnyOfEntry*[*] '}'[?]
+static void parseAnyOfEntryList(Parser *p) {
+    assert(at(p, TOKEN_LCURLY));
+    OpenIndex o = openEvent(p);
+
+    expect(p, TOKEN_LCURLY); // 0
+    while (!at(p, TOKEN_RCURLY) && !at(p, TOKEN_EOF)) {
+        if (at(p, TOKEN_IDENT))
+            parseAnyOfEntry(p); // *
+        else {
+            if (at_any(p, STRUCT_LIST_RECOVERY))
+                break;
+            advanceWithError(p, "Expected an anyof variant");
+        }
+    }
+    expect(p, TOKEN_RCURLY); // ?
+
+    closeEvent(p, o, CST_ANYOF_ENTRY_LIST);
+}
+
+// AnyOfEntry(4) = 'IDENT'[0!] (':'[1] Type[2])? ','?[3]
+static void parseAnyOfEntry(Parser *p) {
+    assert(at(p, TOKEN_IDENT));
+    OpenIndex o = openEvent(p);
+
+    expect(p, TOKEN_IDENT);  // 0
+    if (eat(p, TOKEN_COLON)) // 1
+        parseTypeExpr(p);    // 2
+    else
+        skip(p); // 2
+
+    if (!at(p, TOKEN_RCURLY))
+        expect(p, TOKEN_COMMA); // 3
+    else
+        skip(p); // 3
+
+    closeEvent(p, o, CST_ANYOF_ENTRY);
 }
 
 #define i_TYPE NodeStack, CstNode *

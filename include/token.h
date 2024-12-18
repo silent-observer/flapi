@@ -51,37 +51,38 @@
     XX(TOKEN_LCURLY, "LCurly", "{")                    \
     XX(TOKEN_RCURLY, "RCurly", "}")
 
-#define TOKEN_KEY_LIST                              \
-    XX(TOKEN_K_FN, "Fn", "fn")                      \
-    XX(TOKEN_K_FN_TYPE, "FnType", "Fn")             \
-    XX(TOKEN_K_IF, "If", "if")                      \
-    XX(TOKEN_K_ELSE, "Else", "else")                \
-    XX(TOKEN_K_WHILE, "While", "while")             \
-    XX(TOKEN_K_BREAK, "Break", "break")             \
-    XX(TOKEN_K_CONTINUE, "Continue", "continue")    \
-    XX(TOKEN_K_VAR, "Var", "var")                   \
-    XX(TOKEN_K_LET, "Let", "let")                   \
-    XX(TOKEN_K_RETURN, "Return", "return")          \
-    XX(TOKEN_K_AND, "And", "and")                   \
-    XX(TOKEN_K_OR, "Or", "or")                      \
-    XX(TOKEN_K_NOT, "Not", "not")                   \
-    XX(TOKEN_K_GIVEN, "Given", "given")             \
-    XX(TOKEN_K_INTERFACE, "Interface", "interface") \
-    XX(TOKEN_K_EXEC, "Exec", "exec")                \
-    XX(TOKEN_K_WITH, "With", "with")                \
-    XX(TOKEN_K_FORWARD, "Forward", "forward")       \
-    XX(TOKEN_K_TRUE, "True", "true")                \
-    XX(TOKEN_K_FALSE, "False", "false")             \
-    XX(TOKEN_K_I8, "I8", "i8")                      \
-    XX(TOKEN_K_I16, "I16", "i16")                   \
-    XX(TOKEN_K_I32, "I32", "i32")                   \
-    XX(TOKEN_K_I64, "I64", "i64")                   \
-    XX(TOKEN_K_U8, "U8", "u8")                      \
-    XX(TOKEN_K_U16, "U16", "u16")                   \
-    XX(TOKEN_K_U32, "U32", "u32")                   \
-    XX(TOKEN_K_U64, "U64", "u64")                   \
-    XX(TOKEN_K_STR, "Str", "str")                   \
-    XX(TOKEN_K_CHAR, "Char", "char")                \
+#define TOKEN_KEY_LIST                           \
+    XX(TOKEN_K_FN, "Fn", "fn")                   \
+    XX(TOKEN_K_FN_TYPE, "FnType", "Fn")          \
+    XX(TOKEN_K_IF, "If", "if")                   \
+    XX(TOKEN_K_ELSE, "Else", "else")             \
+    XX(TOKEN_K_WHILE, "While", "while")          \
+    XX(TOKEN_K_BREAK, "Break", "break")          \
+    XX(TOKEN_K_CONTINUE, "Continue", "continue") \
+    XX(TOKEN_K_VAR, "Var", "var")                \
+    XX(TOKEN_K_LET, "Let", "let")                \
+    XX(TOKEN_K_RETURN, "Return", "return")       \
+    XX(TOKEN_K_AND, "And", "and")                \
+    XX(TOKEN_K_OR, "Or", "or")                   \
+    XX(TOKEN_K_NOT, "Not", "not")                \
+    XX(TOKEN_K_GIVEN, "Given", "given")          \
+    XX(TOKEN_K_WITH, "With", "with")             \
+    XX(TOKEN_K_TYPE, "Type", "type")             \
+    XX(TOKEN_K_STRUCT, "Struct", "struct")       \
+    XX(TOKEN_K_ANYOF, "AnyOf", "anyof")          \
+    XX(TOKEN_K_MAKE, "Make", "make")             \
+    XX(TOKEN_K_TRUE, "True", "true")             \
+    XX(TOKEN_K_FALSE, "False", "false")          \
+    XX(TOKEN_K_I8, "I8", "i8")                   \
+    XX(TOKEN_K_I16, "I16", "i16")                \
+    XX(TOKEN_K_I32, "I32", "i32")                \
+    XX(TOKEN_K_I64, "I64", "i64")                \
+    XX(TOKEN_K_U8, "U8", "u8")                   \
+    XX(TOKEN_K_U16, "U16", "u16")                \
+    XX(TOKEN_K_U32, "U32", "u32")                \
+    XX(TOKEN_K_U64, "U64", "u64")                \
+    XX(TOKEN_K_STR, "Str", "str")                \
+    XX(TOKEN_K_CHAR, "Char", "char")             \
     XX(TOKEN_K_BOOL, "Bool", "bool")
 
 typedef enum {

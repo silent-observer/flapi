@@ -270,6 +270,7 @@ static Token lexString(Lexer *lexer) {
     token.kind = TOKEN_STRING;
     lexer->col = col;
     lexer->line += lines;
+    lexer->it = i;
     return token;
 }
 static Token lexChar(Lexer *lexer) {

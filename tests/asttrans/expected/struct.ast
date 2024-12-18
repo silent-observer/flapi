@@ -1,0 +1,74 @@
+Program {
+  fns: [
+    0: TypeDef {
+      name: <MyStruct@0>
+      def: StructDef {
+        fields: [
+          0: VarDef <x@1> : i32
+          1: VarDef <y@1> : i32
+          2: VarDef <name@1> : str
+        ]
+      }
+    }
+    1: FnDef {
+      name: <main@0>
+      params: []
+      return: ()
+      given: []
+      body: [
+        0: LetStmt {
+          var: VarDef <data@2>
+          mutable: false
+          init: MakeStructExpr {
+            type: MyStruct
+            entries: [
+              0: MakeStructEntry {
+                field: <x@2>
+                expr: IntLiteralExpr(1)
+              }
+              1: MakeStructEntry {
+                field: <y@2>
+                expr: IntLiteralExpr(2)
+              }
+              2: MakeStructEntry {
+                field: <name@2>
+                expr: StrLiteralExpr("h")
+              }
+            ]
+          }
+        }
+        1: LetStmt {
+          var: VarDef <s@2>
+          mutable: false
+          init: BinaryExpr {
+            op: "+"
+            lhs: DotExpr {
+              expr: VarExpr {
+                var: <data@2>
+              }
+              field: <x@2>
+            }
+            rhs: DotExpr {
+              expr: VarExpr {
+                var: <data@2>
+              }
+              field: <y@2>
+            }
+          }
+        }
+        2: ExprStmt {
+          expr: AssignExpr {
+            op: "+="
+            lhs: DotExpr {
+              expr: VarExpr {
+                var: <data@2>
+              }
+              field: <x@2>
+            }
+            rhs: IntLiteralExpr(10)
+          }
+        }
+      ]
+    }
+  ]
+}

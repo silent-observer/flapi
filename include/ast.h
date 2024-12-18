@@ -24,6 +24,9 @@
     XX(AST_ASSIGN_EXPR, "AssignExpr")            \
     XX(AST_IF_EXPR, "IfExpr")                    \
     XX(AST_IF_CLAUSE, "IfClause")                \
+    XX(AST_MAKE_STRUCT_EXPR, "MakeStructExpr")   \
+    XX(AST_MAKE_STRUCT_ENTRY, "MakeStructEntry") \
+    XX(AST_MAKE_ANYOF_EXPR, "MakeAnyOfExpr")     \
     XX(AST_BINARY_EXPR, "BinaryExpr")            \
     XX(AST_UNARY_EXPR, "UnaryExpr")              \
     XX(AST_CALL_EXPR_CONST, "CallExprConst")     \
@@ -36,6 +39,11 @@
     XX(AST_STR_LITERAL_EXPR, "StrLiteralExpr")   \
     XX(AST_CHAR_LITERAL_EXPR, "CharLiteralExpr") \
     XX(AST_BOOL_LITERAL_EXPR, "BoolLiteralExpr") \
+                                                 \
+    XX(AST_TYPE_DEF_PARAM, "TypeDefParam")       \
+    XX(AST_TYPE_DEF, "TypeDef")                  \
+    XX(AST_STRUCT_DEF, "StructDef")              \
+    XX(AST_ANYOF_DEF, "AnyOfDef")                \
                                                  \
     XX(AST_TYPECONVERT_EXPR, "TypeConvertExpr")
 
@@ -130,6 +138,21 @@ typedef struct {
     AstChildren body;
 } IfClauseNode;
 
+typedef struct {
+    TypeId type;
+    AstChildren entries;
+} MakeStructExprNode;
+
+typedef struct {
+    SymbolId symbol;
+    AstNode *expr;
+} MakeStructEntryNode;
+
+typedef struct {
+    TypeId type;
+    SymbolId variant;
+    AstNode *expr; /* Can be NULL to indicate no data*/
+} MakeAnyOfExprNode;
 typedef struct {
     AstNode *condition;
     AstChildren body;
@@ -231,6 +254,26 @@ typedef struct {
 } BoolLiteralExprNode;
 
 typedef struct {
+    TypeId param;
+} TypeDefParamNode;
+
+typedef struct {
+    SymbolId name;
+    AstChildren typeParams;
+    AstNode *def;
+} TypeDefNode;
+
+typedef struct {
+    ScopeId scope;
+    VarDefVec fields;
+} StructDefNode;
+
+typedef struct {
+    ScopeId scope;
+    VarDefVec variants;
+} AnyOfDefNode;
+
+typedef struct {
     AstNode *expr;
 } TypeConvertExprNode;
 
@@ -251,6 +294,9 @@ struct AstNode {
         AssignExprNode assignExpr;
         IfExprNode ifExpr;
         IfClauseNode ifClause;
+        MakeStructExprNode makeStructExpr;
+        MakeStructEntryNode makeStructEntry;
+        MakeAnyOfExprNode makeAnyOfExpr;
         BinaryExprNode binaryExpr;
         UnaryExprNode unaryExpr;
         CallExprNode callExpr;
@@ -263,6 +309,10 @@ struct AstNode {
         StrLiteralExprNode strLiteralExpr;
         CharLiteralExprNode charLiteralExpr;
         BoolLiteralExprNode boolLiteralExpr;
+        TypeDefParamNode typeDefParam;
+        TypeDefNode typeDef;
+        StructDefNode structDef;
+        AnyOfDefNode anyOfDef;
         TypeConvertExprNode typeConvertExpr;
     };
 };

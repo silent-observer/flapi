@@ -252,6 +252,31 @@ static void printIfClause(AstPrinter *p, const AstNode *n) {
     }
 }
 
+static void printMakeStructEntry(AstPrinter *p, const AstNode *n) {
+    assert(n->kind == AST_MAKE_STRUCT_ENTRY);
+    START("MakeStructEntry");
+    SYMBOL("field", n->makeStructEntry.symbol);
+    ONE("expr", n->makeStructEntry.expr);
+    END();
+}
+
+static void printMakeStructExpr(AstPrinter *p, const AstNode *n) {
+    assert(n->kind == AST_MAKE_STRUCT_EXPR);
+    START("MakeStructExpr");
+    TYPE("type", n->makeStructExpr.type);
+    MANY("entries", n->makeStructExpr.entries);
+    END();
+}
+
+static void printMakeAnyOfExpr(AstPrinter *p, const AstNode *n) {
+    assert(n->kind == AST_MAKE_ANYOF_EXPR);
+    START("MakeAnyOfExpr");
+    TYPE("type", n->makeAnyOfExpr.type);
+    SYMBOL("variant", n->makeAnyOfExpr.variant);
+    ONE("expr", n->makeAnyOfExpr.expr);
+    END();
+}
+
 static void printWhileStmt(AstPrinter *p, const AstNode *n) {
     assert(n->kind == AST_WHILE_STMT);
     START("WhileStmt");
@@ -398,6 +423,37 @@ static void printBoolLiteralExpr(AstPrinter *p, const AstNode *n) {
     }
 }
 
+static void printTypeDefParam(AstPrinter *p, const AstNode *n) {
+    assert(n->kind == AST_TYPE_DEF_PARAM);
+    START("TypeDefParam");
+    TYPE("param", n->typeDefParam.param);
+    END();
+}
+
+static void printTypeDef(AstPrinter *p, const AstNode *n) {
+    assert(n->kind == AST_TYPE_DEF);
+    START("TypeDef");
+    SYMBOL("name", n->typeDef.name);
+    if (AstChildren_size(&n->typeDef.typeParams) > 0)
+        MANY("params", n->typeDef.typeParams);
+    ONE("def", n->typeDef.def);
+    END();
+}
+
+static void printStructDef(AstPrinter *p, const AstNode *n) {
+    assert(n->kind == AST_STRUCT_DEF);
+    START("StructDef");
+    MANY_VARDEF("fields", n->structDef.fields);
+    END();
+}
+
+static void printAnyOfDef(AstPrinter *p, const AstNode *n) {
+    assert(n->kind == AST_ANYOF_DEF);
+    START("AnyOfDef");
+    MANY_VARDEF("variants", n->anyOfDef.variants);
+    END();
+}
+
 static void printTypeConvertExpr(AstPrinter *p, const AstNode *n) {
     assert(n->kind == AST_TYPECONVERT_EXPR);
     START("TypeConvertExpr");
@@ -446,6 +502,15 @@ static void printNode(AstPrinter *p, const AstNode *n) {
         case AST_IF_CLAUSE:
             printIfClause(p, n);
             break;
+        case AST_MAKE_STRUCT_EXPR:
+            printMakeStructExpr(p, n);
+            break;
+        case AST_MAKE_STRUCT_ENTRY:
+            printMakeStructEntry(p, n);
+            break;
+        case AST_MAKE_ANYOF_EXPR:
+            printMakeAnyOfExpr(p, n);
+            break;
         case AST_BINARY_EXPR:
             printBinaryExpr(p, n);
             break;
@@ -481,6 +546,18 @@ static void printNode(AstPrinter *p, const AstNode *n) {
             break;
         case AST_BOOL_LITERAL_EXPR:
             printBoolLiteralExpr(p, n);
+            break;
+        case AST_TYPE_DEF_PARAM:
+            printTypeDefParam(p, n);
+            break;
+        case AST_TYPE_DEF:
+            printTypeDef(p, n);
+            break;
+        case AST_STRUCT_DEF:
+            printStructDef(p, n);
+            break;
+        case AST_ANYOF_DEF:
+            printAnyOfDef(p, n);
             break;
         case AST_TYPECONVERT_EXPR:
             printTypeConvertExpr(p, n);

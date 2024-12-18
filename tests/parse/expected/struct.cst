@@ -1,0 +1,124 @@
+(Program
+  (TypeDef
+    [Type]
+    (TypeDefName
+      [Ident MyStruct]
+      _
+    )
+    [Equal]
+    (StructDef
+      [Struct]
+      (StructEntryList
+        [LCurly]
+        (StructEntry
+          [Ident x]
+          [Colon]
+          (BaseTypeExpr [I32])
+          [Comma]
+        )
+        (StructEntry
+          [Ident y]
+          [Colon]
+          (BaseTypeExpr [I32])
+          [Comma]
+        )
+        (StructEntry
+          [Ident name]
+          [Colon]
+          (BaseTypeExpr [Str])
+          [Comma]
+        )
+        [RCurly]
+      )
+    )
+  )
+  (FnDef
+    [Fn]
+    [Ident main]
+    (FnParamList
+      [LParen]
+      [RParen]
+    )
+    _
+    _
+    _
+    (Block
+      [LCurly]
+      (LetStmt
+        [Let]
+        (VarDef
+          [Ident data]
+          _
+          _
+        )
+        [Equal]
+        (MakeExpr
+          [Make]
+          (CustomTypeExpr
+            [Ident MyStruct]
+            _
+          )
+          (StructInitExpr
+            [LCurly]
+            (StructInitEntry
+              [Ident x]
+              [Equal]
+              (LiteralExpr [Decimal 1])
+              [Comma]
+            )
+            (StructInitEntry
+              [Ident y]
+              [Equal]
+              (LiteralExpr [Decimal 2])
+              [Comma]
+            )
+            (StructInitEntry
+              [Ident name]
+              [Equal]
+              (LiteralExpr [String "hi"])
+              _
+            )
+            [RCurly]
+          )
+        )
+        [Semi]
+      )
+      (LetStmt
+        [Let]
+        (VarDef
+          [Ident s]
+          _
+          _
+        )
+        [Equal]
+        (BinaryExpr
+          (DotExpr
+            (VarExpr [Ident data])
+            [Dot]
+            [Ident x]
+          )
+          [Plus]
+          (DotExpr
+            (VarExpr [Ident data])
+            [Dot]
+            [Ident y]
+          )
+        )
+        [Semi]
+      )
+      (ExprStmt
+        (AssignExpr
+          (DotExpr
+            (VarExpr [Ident data])
+            [Dot]
+            [Ident x]
+          )
+          [PlusEqual]
+          (LiteralExpr [Decimal 10])
+        )
+        [Semi]
+      )
+      [RCurly]
+    )
+  )
+)
