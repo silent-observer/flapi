@@ -76,7 +76,41 @@ static SymbolId makeSymbol(AstTransformer *astTrans, Token *t) {
     assert(ScopeStack_size(&astTrans->scopes) > 1);
 
     ScopeId scope = *ScopeStack_top(&astTrans->scopes);
-    return SymbolTable_add(&astTrans->symbols, scope, t->text);
+    SymbolId id = SymbolTable_find(&astTrans->symbols, scope, t);
+    if (id != NO_SYMBOL_ID) {
+        Symbol *s = SymbolTable_lookup(&astTrans->symbols, id);
+        if (s->scope == scope) {
+            AstTransformErrorVec_push(
+                &astTrans->errors,
+                (AstTransformError){
+                    .msg = c_zv("symbol already defined"),
+                    .span = makeSourceSpan(t->src.line, t->src.col, t->text.size),
+                    .firstDefinition = s->span,
+                });
+        }
+
+        return id;
+    }
+    return SymbolTable_add(&astTrans->symbols, scope, t);
+}
+
+static SymbolId findSymbol(AstTransformer *astTrans, Token *t) {
+    assert(t);
+    assert(t->kind == TOKEN_IDENT);
+    assert(ScopeStack_size(&astTrans->scopes) > 1);
+
+    ScopeId scope = *ScopeStack_top(&astTrans->scopes);
+    SymbolId id = SymbolTable_find(&astTrans->symbols, scope, t);
+    if (id == NO_SYMBOL_ID) {
+        AstTransformErrorVec_push(
+            &astTrans->errors,
+            (AstTransformError){
+                .msg = c_zv("symbol already defined"),
+                .span = makeSourceSpan(t->src.line, t->src.col, t->text.size),
+            });
+        return SymbolTable_add(&astTrans->symbols, scope, t);
+    }
+    return id;
 }
 
 static SymbolId makeField(AstTransformer *astTrans, Token *t) {
@@ -84,7 +118,7 @@ static SymbolId makeField(AstTransformer *astTrans, Token *t) {
     assert(t->kind == TOKEN_IDENT);
 
     const ScopeId scope = 0;
-    return SymbolTable_add(&astTrans->symbols, scope, t->text);
+    return SymbolTable_add(&astTrans->symbols, scope, t);
 }
 
 static void pushScope(AstTransformer *astTrans) {
@@ -892,7 +926,7 @@ static AstNode *transformDotCallExpr(AstTransformer *astTrans, CstNode *cst) {
 
     assert(is_token(at(1), TOKEN_DOT));
     if (token_at(2)) {
-        n->callExprConst.symbol = makeSymbol(astTrans, token_at(2));
+        n->callExprConst.symbol = findSymbol(astTrans, token_at(2));
     } else
         n->callExprConst.symbol = NO_SYMBOL_ID;
 
@@ -949,7 +983,7 @@ static AstNode *transformVarExpr(AstTransformer *astTrans, CstNode *cst) {
     DEF_NODE(n, AST_VAR_EXPR);
 
     assert(token_at(0));
-    n->varExpr.var = makeSymbol(astTrans, token_at(0));
+    n->varExpr.var = findSymbol(astTrans, token_at(0));
     return n;
 }
 
@@ -1222,7 +1256,7 @@ static AstNode *transformFnDef(AstTransformer *astTrans, CstNode *cst) {
     assert(is_token(at(0), TOKEN_K_FN));
 
     n->fnDef.symbol = is_token(at(1), TOKEN_IDENT)
-                          ? makeSymbol(astTrans, token_at(1))
+                          ? findSymbol(astTrans, token_at(1))
                           : NO_SYMBOL_ID;
 
     pushScope(astTrans);

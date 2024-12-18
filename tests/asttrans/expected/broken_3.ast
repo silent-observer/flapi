@@ -38,3 +38,6 @@ Program {
     }
   ]
 }
+
+------ ERRORS ------
+Syntax error at (3:9): symbol already defined

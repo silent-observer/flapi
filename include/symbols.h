@@ -3,6 +3,7 @@
 
 #include "memcxt.h"
 
+#include "token.h"
 #include "typeid.h"
 #include "types.h"
 
@@ -16,6 +17,7 @@ typedef struct {
     ScopeId scope;
     csview name;
     TypeId type;
+    SourceSpan span;
 } Symbol;
 
 #define i_type SymbolMap
@@ -42,8 +44,8 @@ typedef struct {
 
 SymbolTable SymbolTable_init();
 ScopeId SymbolTable_scope(SymbolTable *table, ScopeId parent);
-SymbolId SymbolTable_add(SymbolTable *table, ScopeId scope, csview name);
-SymbolId SymbolTable_find(SymbolTable *table, ScopeId scope, csview name);
+SymbolId SymbolTable_add(SymbolTable *table, ScopeId scope, Token *t);
+SymbolId SymbolTable_find(SymbolTable *table, ScopeId scope, Token *t);
 Symbol *SymbolTable_lookup(SymbolTable *table, SymbolId id);
 
 #endif

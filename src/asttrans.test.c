@@ -33,10 +33,19 @@ int asttrans_test(void) {
         if (AstTransformErrorVec_size(&astResult.errors) > 0) {
             cstr_append(&astDump, "\n\n------ ERRORS ------\n");
             c_foreach(it, AstTransformErrorVec, astResult.errors) {
-                cstr_append_fmt(&astDump, "Syntax error at (%d:%d): %s\n",
-                                it.ref->span.start.line,
-                                it.ref->span.start.col,
-                                it.ref->msg.str);
+                if (it.ref->span.start.line == 0 && it.ref->span.start.col == 0) {
+                    cstr_append_fmt(&astDump, "Syntax error at (%d:%d): %s, first definition at (%d:%d)\n",
+                                    it.ref->span.start.line,
+                                    it.ref->span.start.col,
+                                    it.ref->msg.str,
+                                    it.ref->firstDefinition.start.line,
+                                    it.ref->firstDefinition.start.col);
+                } else {
+                    cstr_append_fmt(&astDump, "Syntax error at (%d:%d): %s\n",
+                                    it.ref->span.start.line,
+                                    it.ref->span.start.col,
+                                    it.ref->msg.str);
+                }
             }
         }
 

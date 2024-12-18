@@ -7,6 +7,7 @@
 typedef struct {
     czview msg;
     SourceSpan span;
+    SourceSpan firstDefinition;
 } AstTransformError;
 
 #define i_TYPE AstTransformErrorVec, AstTransformError
