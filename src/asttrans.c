@@ -73,9 +73,17 @@ static AstNode *newErrNode(AstTransformer *astTrans, CstNode *c) {
 static SymbolId makeSymbol(AstTransformer *astTrans, Token *t) {
     assert(t);
     assert(t->kind == TOKEN_IDENT);
-    assert(!ScopeStack_empty(&astTrans->scopes));
+    assert(ScopeStack_size(&astTrans->scopes) > 1);
 
     ScopeId scope = *ScopeStack_top(&astTrans->scopes);
+    return SymbolTable_add(&astTrans->symbols, scope, t->text);
+}
+
+static SymbolId makeField(AstTransformer *astTrans, Token *t) {
+    assert(t);
+    assert(t->kind == TOKEN_IDENT);
+
+    const ScopeId scope = 0;
     return SymbolTable_add(&astTrans->symbols, scope, t->text);
 }
 
@@ -532,7 +540,7 @@ static AstNode *transformStructInitEntry(AstTransformer *astTrans, CstNode *cst)
     DEF_NODE(n, AST_MAKE_STRUCT_ENTRY);
 
     assert(is_token(at(0), TOKEN_IDENT));
-    n->makeStructEntry.symbol = makeSymbol(astTrans, token_at(0));
+    n->makeStructEntry.symbol = makeField(astTrans, token_at(0));
 
     if (is_token(at(1), TOKEN_EQUAL)) {
         assert(at(2)->kind == CST_CHILD_NODE);
@@ -566,7 +574,7 @@ static AstNode *transformAnyOfInitExpr(AstTransformer *astTrans, CstNode *cst, S
     assert(CstChildren_size(&cst->children) == 2);
 
     assert(is_token(at(0), TOKEN_IDENT));
-    *variant = makeSymbol(astTrans, token_at(0));
+    *variant = makeField(astTrans, token_at(0));
 
     if (node_at(1)) {
         return transformExpr(astTrans, node_at(1));
@@ -928,7 +936,7 @@ static AstNode *transformDotExpr(AstTransformer *astTrans, CstNode *cst) {
     assert(node_at(0));
     n->dotExpr.expr = transformExpr(astTrans, node_at(0));
     assert(token_at(2));
-    n->dotExpr.field = makeSymbol(astTrans, token_at(2));
+    n->dotExpr.field = makeField(astTrans, token_at(2));
     return n;
 }
 
@@ -1309,7 +1317,7 @@ static VarDef transformStructEntry(AstTransformer *astTrans, CstNode *cst) {
     v.span = cst->span;
 
     assert(is_token(at(0), TOKEN_IDENT));
-    v.symbol = makeSymbol(astTrans, token_at(0));
+    v.symbol = makeField(astTrans, token_at(0));
 
     if (is_token(at(1), TOKEN_COLON)) {
         assert(at(2)->kind == CST_CHILD_NODE);
@@ -1344,11 +1352,8 @@ static AstNode *transformStructDef(AstTransformer *astTrans, CstNode *cst) {
 
     DEF_NODE(n, AST_STRUCT_DEF);
 
-    pushScope(astTrans);
-    n->structDef.scope = *ScopeStack_top(&astTrans->scopes);
     if (node_at(1))
         transformStructEntryList(astTrans, node_at(1), &n->structDef.fields);
-    popScope(astTrans);
     return n;
 }
 
@@ -1362,7 +1367,7 @@ static VarDef transformAnyOfEntry(AstTransformer *astTrans, CstNode *cst) {
     v.span = cst->span;
 
     assert(is_token(at(0), TOKEN_IDENT));
-    v.symbol = makeSymbol(astTrans, token_at(0));
+    v.symbol = makeField(astTrans, token_at(0));
 
     if (is_token(at(1), TOKEN_COLON)) {
         assert(at(2)->kind == CST_CHILD_NODE);
@@ -1396,11 +1401,8 @@ static AstNode *transformAnyOfDef(AstTransformer *astTrans, CstNode *cst) {
 
     DEF_NODE(n, AST_ANYOF_DEF);
 
-    pushScope(astTrans);
-    n->anyOfDef.scope = *ScopeStack_top(&astTrans->scopes);
     if (node_at(1))
         transformAnyOfEntryList(astTrans, node_at(1), &n->anyOfDef.variants);
-    popScope(astTrans);
     return n;
 }
 
@@ -1495,6 +1497,8 @@ AstTransformResult astFromCst(Cst *cst) {
     };
 
     ScopeStack_push(&astTrans.scopes, 0);
+    assert(SymbolTable_scope(&astTrans.symbols, 1) == 1);
+    ScopeStack_push(&astTrans.scopes, 1);
 
     collectGlobalsNode(&astTrans, cst->root);
     AstNode *program = transformProgram(&astTrans, cst->root);

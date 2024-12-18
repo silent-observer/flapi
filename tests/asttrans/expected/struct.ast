@@ -1,17 +1,17 @@
 Program {
   fns: [
     0: TypeDef {
-      name: <MyStruct@0>
+      name: <MyStruct@1>
       def: StructDef {
         fields: [
-          0: VarDef <x@1> : i32
-          1: VarDef <y@1> : i32
-          2: VarDef <name@1> : str
+          0: VarDef <x@0> : i32
+          1: VarDef <y@0> : i32
+          2: VarDef <name@0> : str
         ]
       }
     }
     1: FnDef {
-      name: <main@0>
+      name: <main@1>
       params: []
       return: ()
       given: []
@@ -23,15 +23,15 @@ Program {
             type: MyStruct
             entries: [
               0: MakeStructEntry {
-                field: <x@2>
+                field: <x@0>
                 expr: IntLiteralExpr(1)
               }
               1: MakeStructEntry {
-                field: <y@2>
+                field: <y@0>
                 expr: IntLiteralExpr(2)
               }
               2: MakeStructEntry {
-                field: <name@2>
+                field: <name@0>
                 expr: StrLiteralExpr("h")
               }
             ]
@@ -46,13 +46,13 @@ Program {
               expr: VarExpr {
                 var: <data@2>
               }
-              field: <x@2>
+              field: <x@0>
             }
             rhs: DotExpr {
               expr: VarExpr {
                 var: <data@2>
               }
-              field: <y@2>
+              field: <y@0>
             }
           }
         }
@@ -63,7 +63,7 @@ Program {
               expr: VarExpr {
                 var: <data@2>
               }
-              field: <x@2>
+              field: <x@0>
             }
             rhs: IntLiteralExpr(10)
           }

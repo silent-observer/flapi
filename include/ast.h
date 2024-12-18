@@ -264,12 +264,10 @@ typedef struct {
 } TypeDefNode;
 
 typedef struct {
-    ScopeId scope;
     VarDefVec fields;
 } StructDefNode;
 
 typedef struct {
-    ScopeId scope;
     VarDefVec variants;
 } AnyOfDefNode;
 

@@ -1,31 +1,9 @@
 Program {
   fns: [
     0: FnDef {
-      name: <foo@0>
+      name: <foo@1>
       params: [
-        0: VarDef <a@1> : i32
-        1: VarDef <b@1>
-      ]
-      return: ()
-      given: []
-      body: [
-        0: ReturnStmt {
-          expr: BinaryExpr {
-            op: "+"
-            lhs: VarExpr {
-              var: <a@1>
-            }
-            rhs: VarExpr {
-              var: <b@1>
-            }
-          }
-        }
-      ]
-    }
-    1: FnDef {
-      name: <bar@0>
-      params: [
-        0: VarDef <a@2>
+        0: VarDef <a@2> : i32
         1: VarDef <b@2>
       ]
       return: ()
@@ -44,11 +22,33 @@ Program {
         }
       ]
     }
-    2: FnDef {
-      name: <baz@0>
+    1: FnDef {
+      name: <bar@1>
       params: [
         0: VarDef <a@3>
-        1: VarDef <b@3> : i32
+        1: VarDef <b@3>
+      ]
+      return: ()
+      given: []
+      body: [
+        0: ReturnStmt {
+          expr: BinaryExpr {
+            op: "+"
+            lhs: VarExpr {
+              var: <a@3>
+            }
+            rhs: VarExpr {
+              var: <b@3>
+            }
+          }
+        }
+      ]
+    }
+    2: FnDef {
+      name: <baz@1>
+      params: [
+        0: VarDef <a@4>
+        1: VarDef <b@4> : i32
       ]
       return: ()
       given: []
@@ -60,7 +60,7 @@ Program {
     6: <ERROR>
     7: <ERROR>
     8: FnDef {
-      name: <main@0>
+      name: <main@1>
       params: []
       return: ()
       given: []
@@ -68,7 +68,7 @@ Program {
         0: ExprStmt {
           expr: CallExpr {
             fn: VarExpr {
-              var: <foo@0>
+              var: <foo@1>
             }
             args: [
               0: IntLiteralExpr(1)
@@ -79,7 +79,7 @@ Program {
         1: ExprStmt {
           expr: CallExpr {
             fn: VarExpr {
-              var: <bar@0>
+              var: <bar@1>
             }
             args: [
               0: IntLiteralExpr(3)
@@ -89,7 +89,7 @@ Program {
         }
         2: ExprStmt {
           expr: CallExprConst {
-            name: <baz@0>
+            name: <baz@1>
             args: [
               0: IntLiteralExpr(5)
               1: IntLiteralExpr(6)
@@ -97,7 +97,7 @@ Program {
           }
         }
         3: LetStmt {
-          var: VarDef <x@4>
+          var: VarDef <x@5>
           mutable: false
           init: IfExpr {
             clauses: [

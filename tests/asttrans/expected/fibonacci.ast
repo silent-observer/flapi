@@ -1,9 +1,9 @@
 Program {
   fns: [
     0: FnDef {
-      name: <fib@0>
+      name: <fib@1>
       params: [
-        0: VarDef <x@1> : i32
+        0: VarDef <x@2> : i32
       ]
       return: i32
       given: []
@@ -15,7 +15,7 @@ Program {
                 cond: BinaryExpr {
                   op: ">="
                   lhs: VarExpr {
-                    var: <x@1>
+                    var: <x@2>
                   }
                   rhs: IntLiteralExpr(1)
                 }
@@ -29,17 +29,17 @@ Program {
           }
         }
         1: LetStmt {
-          var: VarDef <f1@1>
+          var: VarDef <f1@2>
           mutable: false
           init: CallExpr {
             fn: VarExpr {
-              var: <fib@0>
+              var: <fib@1>
             }
             args: [
               0: BinaryExpr {
                 op: "-"
                 lhs: VarExpr {
-                  var: <x@1>
+                  var: <x@2>
                 }
                 rhs: IntLiteralExpr(1)
               }
@@ -47,17 +47,17 @@ Program {
           }
         }
         2: LetStmt {
-          var: VarDef <f2@1>
+          var: VarDef <f2@2>
           mutable: false
           init: CallExpr {
             fn: VarExpr {
-              var: <fib@0>
+              var: <fib@1>
             }
             args: [
               0: BinaryExpr {
                 op: "-"
                 lhs: VarExpr {
-                  var: <x@1>
+                  var: <x@2>
                 }
                 rhs: IntLiteralExpr(2)
               }
@@ -68,10 +68,10 @@ Program {
           expr: BinaryExpr {
             op: "+"
             lhs: VarExpr {
-              var: <f1@1>
+              var: <f1@2>
             }
             rhs: VarExpr {
-              var: <f2@1>
+              var: <f2@2>
             }
           }
         }

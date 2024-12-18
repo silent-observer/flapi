@@ -1,7 +1,7 @@
 Program {
   fns: [
     0: FnDef {
-      name: <foo@0>
+      name: <foo@1>
       params: []
       return: i32
       given: []

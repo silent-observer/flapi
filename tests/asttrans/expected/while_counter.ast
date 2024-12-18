@@ -1,15 +1,15 @@
 Program {
   fns: [
     0: FnDef {
-      name: <f@0>
+      name: <f@1>
       params: [
-        0: VarDef <x@1> : i32
+        0: VarDef <x@2> : i32
       ]
       return: i32
       given: []
       body: [
         0: LetStmt {
-          var: VarDef <i@1>
+          var: VarDef <i@2>
           mutable: true
           init: IntLiteralExpr(0)
         }
@@ -17,22 +17,22 @@ Program {
           cond: BinaryExpr {
             op: "<="
             lhs: VarExpr {
-              var: <i@1>
+              var: <i@2>
             }
             rhs: VarExpr {
-              var: <x@1>
+              var: <x@2>
             }
           }
           body: [
             0: ExprStmt {
               expr: AssignExpr {
                 lhs: VarExpr {
-                  var: <i@1>
+                  var: <i@2>
                 }
                 rhs: BinaryExpr {
                   op: "+"
                   lhs: VarExpr {
-                    var: <i@1>
+                    var: <i@2>
                   }
                   rhs: IntLiteralExpr(1)
                 }
@@ -42,7 +42,7 @@ Program {
         }
         2: ReturnStmt {
           expr: VarExpr {
-            var: <i@1>
+            var: <i@2>
           }
         }
       ]
