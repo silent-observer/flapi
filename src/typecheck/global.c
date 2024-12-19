@@ -9,6 +9,9 @@ void typecollectProgram(TypeInferContext *ctx, AstNode *n) {
             case AST_FN_DEF:
                 typecollectFnDef(ctx, *it.ref);
                 break;
+            case AST_TYPE_DEF:
+                typecollectTypeDef(ctx, *it.ref);
+                break;
             default:
                 assert(0);
         }
@@ -23,6 +26,8 @@ void typecheckProgram(TypeInferContext *ctx, AstNode *node) {
                 break;
             case AST_FN_DEF:
                 typecheckFnDef(ctx, *it.ref);
+                break;
+            case AST_TYPE_DEF:
                 break;
             default:
                 assert(0);

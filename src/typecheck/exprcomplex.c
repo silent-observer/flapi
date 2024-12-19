@@ -15,8 +15,8 @@ void typecheckAssignExpr(TypeInferContext *ctx, AstNode *node, TypeId expected) 
 
 TypeId typeinferAssignExpr(TypeInferContext *ctx, AstNode *node) {
     assert(node->kind == AST_ASSIGN_EXPR);
-    TypeId type = typeinferExpr(ctx, node->assignExpr.rhs);
-    typecheckExpr(ctx, node->assignExpr.lhs, type);
+    TypeId type = typeinferExpr(ctx, node->assignExpr.lhs);
+    typecheckExpr(ctx, node->assignExpr.rhs, type);
     return Type_simple(TYPE_NONE);
 }
 
@@ -80,4 +80,92 @@ TypeId typeinferIfClause(TypeInferContext *ctx, AstNode *node) {
             node->type = result;
     }
     return node->type;
+}
+
+void typecheckMakeStructExpr(TypeInferContext *ctx, AstNode *node, TypeId expected) {
+    assert(node->kind == AST_MAKE_STRUCT_EXPR);
+    node->type = typeinferMakeStructExpr(ctx, node);
+    typeconvertOrErr(ctx, node, expected);
+}
+
+TypeId typeinferMakeStructExpr(TypeInferContext *ctx, AstNode *node) {
+    assert(node->kind == AST_MAKE_STRUCT_EXPR);
+    TypeId result = node->makeStructExpr.type;
+    CustomTypeEntry *resultEntry = CustomTypeTable_find(
+        ctx->customTypes,
+        ctx->types,
+        result);
+
+    if (!resultEntry) {
+        cstr t = TypeId_print(ctx->types, result);
+        ERROR(node->span,
+              "couldn't find a type definition for %s",
+              cstr_str(&t));
+        cstr_drop(&t);
+        return result;
+    }
+
+    if (resultEntry->kind != CUSTOM_TYPE_STRUCT) {
+        cstr t = TypeId_print(ctx->types, result);
+        ERROR(node->span,
+              "type %s is not a struct",
+              cstr_str(&t));
+        cstr_drop(&t);
+        return result;
+    }
+
+    c_foreach(it, AstChildren, node->makeStructExpr.entries) {
+        assert((*it.ref)->kind == AST_MAKE_STRUCT_ENTRY);
+        MakeStructEntryNode *entry = &(*it.ref)->makeStructEntry;
+        TypeId entryType = CustomTypeTable_getFieldType(
+            ctx->customTypes,
+            ctx->types,
+            result,
+            entry->symbol);
+        typecheckExpr(ctx, entry->expr, entryType);
+        (*it.ref)->type = entryType;
+    }
+    return result;
+}
+
+void typecheckMakeAnyOfExpr(TypeInferContext *ctx, AstNode *node, TypeId expected) {
+    assert(node->kind == AST_MAKE_ANYOF_EXPR);
+    node->type = typeinferMakeAnyOfExpr(ctx, node);
+    typeconvertOrErr(ctx, node, expected);
+}
+
+TypeId typeinferMakeAnyOfExpr(TypeInferContext *ctx, AstNode *node) {
+    assert(node->kind == AST_MAKE_ANYOF_EXPR);
+    TypeId result = node->makeAnyOfExpr.type;
+    CustomTypeEntry *resultEntry = CustomTypeTable_find(
+        ctx->customTypes,
+        ctx->types,
+        result);
+
+    if (!resultEntry) {
+        cstr t = TypeId_print(ctx->types, result);
+        ERROR(node->span,
+              "couldn't find a type definition for %s",
+              cstr_str(&t));
+        cstr_drop(&t);
+        return result;
+    }
+
+    if (resultEntry->kind != CUSTOM_TYPE_ANYOF) {
+        cstr t = TypeId_print(ctx->types, result);
+        ERROR(node->span,
+              "type %s is not an anyof",
+              cstr_str(&t));
+        cstr_drop(&t);
+        return result;
+    }
+
+    TypeId entryType = CustomTypeTable_getFieldType(
+        ctx->customTypes,
+        ctx->types,
+        result,
+        node->makeAnyOfExpr.variant);
+
+    typecheckExpr(ctx, node->makeAnyOfExpr.expr, entryType);
+    return result;
 }

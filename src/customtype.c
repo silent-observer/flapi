@@ -81,6 +81,9 @@ TypeId CustomTypeTable_getFieldType(CustomTypeTable *table,
                                     SymbolId field) {
     TypeId baseId = getBaseType(types, id);
     const CustomTypeEntry *entry = &CustomTypeMap_get(&table->map, baseId)->second;
+    if (!entry)
+        return Type_simple(TYPE_ERROR);
+
     c_foreach(it, CustomTypeElementVec, entry->elements) {
         if (it.ref->name == field) {
             return substituteType(types, entry->baseType, &entry->typeParams, id, it.ref->type);

@@ -1,0 +1,89 @@
+Program : <none> {
+  fns: [
+    0: TypeDef : <unknown> {
+      type: MyStruct
+      def: StructDef : <unknown> {
+        fields: [
+          0: VarDef <x@0> : i32
+          1: VarDef <y@0> : i32
+          2: VarDef <name@0> : str
+        ]
+      }
+    }
+    1: FnDef : <none> {
+      name: <main@1> : fn() -> ()
+      params: []
+      return: ()
+      given: []
+      body: [
+        0: LetStmt : <none> {
+          var: VarDef <data@2> : MyStruct
+          mutable: false
+          init: MakeStructExpr : MyStruct {
+            type: MyStruct
+            entries: [
+              0: MakeStructEntry : i32 {
+                field: <x@0> : <unknown>
+                expr: TypeConvertExpr : i32 {
+                  expr: IntLiteralExpr(1) : <intlit>
+                }
+              }
+              1: MakeStructEntry : i32 {
+                field: <y@0> : <unknown>
+                expr: TypeConvertExpr : i32 {
+                  expr: IntLiteralExpr(2) : <intlit>
+                }
+              }
+              2: MakeStructEntry : str {
+                field: <name@0> : <unknown>
+                expr: StrLiteralExpr("h") : str
+              }
+            ]
+          }
+        }
+        1: LetStmt : <none> {
+          var: VarDef <s@2> : i32
+          mutable: false
+          init: BinaryExpr : i32 {
+            op: "+"
+            lhs: DotExpr : i32 {
+              expr: VarExpr : MyStruct {
+                var: <data@2> : MyStruct
+              }
+              field: <x@0> : <unknown>
+            }
+            rhs: DotExpr : i32 {
+              expr: VarExpr : MyStruct {
+                var: <data@2> : MyStruct
+              }
+              field: <y@0> : <unknown>
+            }
+          }
+        }
+        2: ExprStmt : <none> {
+          expr: AssignExpr : <none> {
+            op: "+="
+            lhs: DotExpr : i32 {
+              expr: VarExpr : MyStruct {
+                var: <data@2> : MyStruct
+              }
+              field: <x@0> : <unknown>
+            }
+            rhs: TypeConvertExpr : i32 {
+              expr: IntLiteralExpr(10) : <intlit>
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+
+------ CUSTOM TYPES ------
+CustomTypeTable {
+  struct MyStruct {
+    x : i32,
+    y : i32,
+    name : str,
+  }
+}

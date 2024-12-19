@@ -26,11 +26,14 @@
 
 #define test_header() fprintf(stderr, "--> %s\n", __func__)
 
-#define subtest_fail(msg, subtest)                                                   \
-    do {                                                                             \
-        fprintf(stderr, "    \x1b[31m[X]\x1b[39m %s\n    Test failed: %s (%s:%d)\n", \
-                subtest, msg, __FILENAME__, __LINE__);                               \
-        return 1;                                                                    \
+#define subtest_fail(msg, subtest)                 \
+    do {                                           \
+        fprintf(                                   \
+            stderr,                                \
+            "    \x1b[31m[X]\x1b[39m %s\n"         \
+            "        Test failed: %s (%s:%d)\n",   \
+            subtest, msg, __FILENAME__, __LINE__); \
+        return 1;                                  \
     } while (0)
 
 #define subtest_success(subtest)                                  \
@@ -69,8 +72,7 @@
             popMemCxt();                          \
         }                                         \
         StrVec_drop(&__names);                    \
-        test_assert(!__err);                      \
-        return 0;                                 \
+        return __err;                             \
     } while (0)
 
 #endif

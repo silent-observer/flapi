@@ -23,6 +23,14 @@ int typeinfer_subtest(const char *name) {
     TypingErrorVec typingErrors = typeinfer(&astResult.ast);
 
     cstr astDump = printAst(&astResult.ast, true);
+    if (CustomTypeMap_size(&astResult.ast.customTypes.map) > 0) {
+        cstr_append(&astDump, "\n\n------ CUSTOM TYPES ------\n");
+        cstr_append_s(&astDump,
+                      CustomTypeTable_print(
+                          &astResult.ast.customTypes,
+                          &astResult.ast.types,
+                          &astResult.ast.symbols));
+    }
     if (TypingErrorVec_size(&typingErrors) > 0) {
         cstr_append(&astDump, "\n\n------ ERRORS ------\n");
         c_foreach(it, TypingErrorVec, typingErrors) {

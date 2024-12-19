@@ -158,6 +158,12 @@ TypeId typeinferExpr(TypeInferContext *ctx, AstNode *node) {
         case AST_IF_EXPR:
             node->type = typeinferIfExpr(ctx, node);
             break;
+        case AST_MAKE_STRUCT_EXPR:
+            node->type = typeinferMakeStructExpr(ctx, node);
+            break;
+        case AST_MAKE_ANYOF_EXPR:
+            node->type = typeinferMakeAnyOfExpr(ctx, node);
+            break;
         case AST_ASSIGN_EXPR:
             node->type = typeinferAssignExpr(ctx, node);
             break;

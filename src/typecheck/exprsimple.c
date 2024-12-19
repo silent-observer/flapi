@@ -182,10 +182,51 @@ TypeId typeinferIndexExpr(TypeInferContext *ctx, AstNode *node) {
     assert(0); // TODO: not supported yet
 }
 void typecheckDotExpr(TypeInferContext *ctx, AstNode *node, TypeId expected) {
-    assert(0); // TODO: not supported yet
+    assert(node->kind == AST_DOT_EXPR);
+    node->type = typeinferDotExpr(ctx, node);
+    typeconvertOrErr(ctx, node, expected);
 }
 TypeId typeinferDotExpr(TypeInferContext *ctx, AstNode *node) {
-    assert(0); // TODO: not supported yet
+    assert(node->kind == AST_DOT_EXPR);
+    TypeId t = typeinferExpr(ctx, node->dotExpr.expr);
+    CustomTypeEntry *entry = CustomTypeTable_find(
+        ctx->customTypes,
+        ctx->types,
+        t);
+
+    if (!entry) {
+        cstr s = TypeId_print(ctx->types, t);
+        ERROR(node->span,
+              "couldn't find a type definition for %s",
+              cstr_str(&s));
+        cstr_drop(&s);
+        return Type_simple(TYPE_ERROR);
+    }
+
+    if (entry->kind != CUSTOM_TYPE_STRUCT) {
+        cstr s = TypeId_print(ctx->types, t);
+        ERROR(node->span,
+              "type %s is not a struct",
+              cstr_str(&s));
+        cstr_drop(&s);
+        return Type_simple(TYPE_ERROR);
+    }
+
+    TypeId fieldType = CustomTypeTable_getFieldType(
+        ctx->customTypes,
+        ctx->types,
+        t,
+        node->dotExpr.field);
+    if (fieldType.id == Type_simple(TYPE_ERROR).id) {
+        cstr s = TypeId_print(ctx->types, t);
+        Symbol *sym = SymbolTable_lookup(ctx->symbols, node->dotExpr.field);
+        ERROR(node->span,
+              "couldn't find field %.*s in type %s",
+              c_SV(sym->name),
+              cstr_str(&s));
+        cstr_drop(&s);
+    }
+    return fieldType;
 }
 
 TypeId typeinferVarExpr(TypeInferContext *ctx, AstNode *node) {
