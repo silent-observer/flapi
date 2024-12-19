@@ -23,6 +23,7 @@ void typecheckLetStmt(TypeInferContext *ctx, AstNode *node) {
 
     Symbol *s = SymbolTable_lookup(ctx->symbols, node->letStmt.varDef.symbol);
     s->type = node->letStmt.varDef.type;
+    s->isMutable = node->letStmt.isMutable;
 }
 void typecheckWithStmt(TypeInferContext *ctx, AstNode *node) {
     // TODO: unsupported

@@ -18,6 +18,7 @@ typedef struct {
     csview name;
     TypeId type;
     SourceSpan span;
+    b8 isMutable;
 } Symbol;
 
 #define i_type SymbolMap
@@ -47,5 +48,10 @@ ScopeId SymbolTable_scope(SymbolTable *table, ScopeId parent);
 SymbolId SymbolTable_add(SymbolTable *table, ScopeId scope, Token *t);
 SymbolId SymbolTable_find(SymbolTable *table, ScopeId scope, Token *t);
 Symbol *SymbolTable_lookup(SymbolTable *table, SymbolId id);
+static inline Symbol *SymbolTable_setMutable(SymbolTable *table, SymbolId id, b8 isMutable) {
+    Symbol *s = SymbolTable_lookup(table, id);
+    s->isMutable = isMutable;
+    return s;
+}
 
 #endif

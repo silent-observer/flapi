@@ -226,12 +226,14 @@ TypeId typeinferDotExpr(TypeInferContext *ctx, AstNode *node) {
               cstr_str(&s));
         cstr_drop(&s);
     }
+    node->isMutable = node->dotExpr.expr->isMutable;
     return fieldType;
 }
 
 TypeId typeinferVarExpr(TypeInferContext *ctx, AstNode *node) {
     assert(node->kind == AST_VAR_EXPR);
     Symbol *s = SymbolTable_lookup(ctx->symbols, node->varExpr.var);
+    node->isMutable = s->isMutable;
     return s->type;
 }
 

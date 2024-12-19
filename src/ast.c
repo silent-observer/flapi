@@ -33,6 +33,8 @@ static void printSymbol(AstPrinter *p, SymbolId s) {
     cstr_append_fmt(&p->out, "<%.*s@%u>", c_SV(symbol->name), symbol->scope);
     if (p->printTypes) {
         cstr_append(&p->out, " : ");
+        if (symbol->isMutable)
+            cstr_append(&p->out, "mut ");
         printType(p, symbol->type);
     }
 }
@@ -77,15 +79,17 @@ static void printVarDefVec(AstPrinter *p, const VarDefVec *n) {
     cstr_append(&p->out, "]");
 }
 
-#define START(name)                      \
-    do {                                 \
-        cstr_append(&p->out, name);      \
-        if (p->printTypes) {             \
-            cstr_append(&p->out, " : "); \
-            printType(p, n->type);       \
-        }                                \
-        cstr_append(&p->out, " {");      \
-        p->indent++;                     \
+#define START(name)                           \
+    do {                                      \
+        cstr_append(&p->out, name);           \
+        if (p->printTypes) {                  \
+            cstr_append(&p->out, " : ");      \
+            if (n->isMutable)                 \
+                cstr_append(&p->out, "mut "); \
+            printType(p, n->type);            \
+        }                                     \
+        cstr_append(&p->out, " {");           \
+        p->indent++;                          \
     } while (0)
 #define END()                      \
     do {                           \

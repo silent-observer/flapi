@@ -16,6 +16,9 @@ void typecheckAssignExpr(TypeInferContext *ctx, AstNode *node, TypeId expected) 
 TypeId typeinferAssignExpr(TypeInferContext *ctx, AstNode *node) {
     assert(node->kind == AST_ASSIGN_EXPR);
     TypeId type = typeinferExpr(ctx, node->assignExpr.lhs);
+    if (!node->assignExpr.lhs->isMutable) {
+        ERROR(node->span, "expression is not mutable, cannot assign to it");
+    }
     typecheckExpr(ctx, node->assignExpr.rhs, type);
     return Type_simple(TYPE_NONE);
 }

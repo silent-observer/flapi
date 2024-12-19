@@ -87,3 +87,6 @@ CustomTypeTable {
     name : str,
   }
 }
+
+------ ERRORS ------
+Type error at (14:5): expression is not mutable, cannot assign to it

@@ -21,8 +21,8 @@ Program : <none> {
         1: WhileStmt : <none> {
           cond: BinaryExpr : bool {
             op: "<="
-            lhs: VarExpr : i64 {
-              var: <i@2> : i64
+            lhs: VarExpr : mut i64 {
+              var: <i@2> : mut i64
             }
             rhs: TypeConvertExpr : i64 {
               expr: VarExpr : i32 {
@@ -33,13 +33,13 @@ Program : <none> {
           body: [
             0: ExprStmt : <none> {
               expr: AssignExpr : <none> {
-                lhs: VarExpr : i64 {
-                  var: <i@2> : i64
+                lhs: VarExpr : mut i64 {
+                  var: <i@2> : mut i64
                 }
                 rhs: BinaryExpr : i64 {
                   op: "+"
-                  lhs: VarExpr : i64 {
-                    var: <i@2> : i64
+                  lhs: VarExpr : mut i64 {
+                    var: <i@2> : mut i64
                   }
                   rhs: TypeConvertExpr : i64 {
                     expr: IntLiteralExpr(1) : <intlit>
@@ -50,8 +50,8 @@ Program : <none> {
           ]
         }
         2: ReturnStmt : <none> {
-          expr: VarExpr : i32 {
-            var: <i@2> : i64
+          expr: VarExpr : mut i32 {
+            var: <i@2> : mut i64
           }
         }
       ]

@@ -44,8 +44,10 @@ void typecollectFnDef(TypeInferContext *ctx, AstNode *n) {
     c_foreach(it, AstChildren, n->fnDef.params) {
         FnParamNode *p = &(*it.ref)->fnParam;
         Symbol *sv = SymbolTable_lookup(ctx->symbols, p->symbol);
-        if (p->type.id != Type_simple(TYPE_UNKNOWN).id)
+        if (p->type.id != Type_simple(TYPE_UNKNOWN).id) {
             sv->type = p->type;
+            sv->isMutable = p->isMutable;
+        }
         TypeChildren_push(&paramT.children, p->type);
         (*it.ref)->type = p->type;
     }
