@@ -1,9 +1,9 @@
 Program : <none> {
   fns: [
     0: FnDef : <none> {
-      name: <fib@0> : fn(i32) -> i32
+      name: <fib@1> : fn(i32) -> i32
       params: [
-        0: VarDef <x@1> : i32
+        0: VarDef <x@2> : i32
       ]
       return: i32
       given: []
@@ -15,7 +15,7 @@ Program : <none> {
                 cond: BinaryExpr : bool {
                   op: ">="
                   lhs: VarExpr : i32 {
-                    var: <x@1> : i32
+                    var: <x@2> : i32
                   }
                   rhs: TypeConvertExpr : i32 {
                     expr: IntLiteralExpr(1) : <intlit>
@@ -33,17 +33,17 @@ Program : <none> {
           }
         }
         1: LetStmt : <none> {
-          var: VarDef <f1@1> : i32
+          var: VarDef <f1@2> : i32
           mutable: false
           init: CallExpr : i32 {
             fn: VarExpr : fn(i32) -> i32 {
-              var: <fib@0> : fn(i32) -> i32
+              var: <fib@1> : fn(i32) -> i32
             }
             args: [
               0: BinaryExpr : i32 {
                 op: "-"
                 lhs: VarExpr : i32 {
-                  var: <x@1> : i32
+                  var: <x@2> : i32
                 }
                 rhs: TypeConvertExpr : i32 {
                   expr: IntLiteralExpr(1) : <intlit>
@@ -53,17 +53,17 @@ Program : <none> {
           }
         }
         2: LetStmt : <none> {
-          var: VarDef <f2@1> : i32
+          var: VarDef <f2@2> : i32
           mutable: false
           init: CallExpr : i32 {
             fn: VarExpr : fn(i32) -> i32 {
-              var: <fib@0> : fn(i32) -> i32
+              var: <fib@1> : fn(i32) -> i32
             }
             args: [
               0: BinaryExpr : i32 {
                 op: "-"
                 lhs: VarExpr : i32 {
-                  var: <x@1> : i32
+                  var: <x@2> : i32
                 }
                 rhs: TypeConvertExpr : i32 {
                   expr: IntLiteralExpr(2) : <intlit>
@@ -76,10 +76,10 @@ Program : <none> {
           expr: BinaryExpr : i32 {
             op: "+"
             lhs: VarExpr : i32 {
-              var: <f1@1> : i32
+              var: <f1@2> : i32
             }
             rhs: VarExpr : i32 {
-              var: <f2@1> : i32
+              var: <f2@2> : i32
             }
           }
         }

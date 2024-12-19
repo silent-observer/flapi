@@ -1,10 +1,10 @@
 Program : <none> {
   fns: [
     0: FnDef : <none> {
-      name: <foo@0> : fn(i32, i32) -> ()
+      name: <foo@1> : fn(i32, i32) -> ()
       params: [
-        0: VarDef <x@1> : i32
-        1: VarDef <y@1> : i32
+        0: VarDef <x@2> : i32
+        1: VarDef <y@2> : i32
       ]
       return: ()
       given: []
@@ -12,7 +12,7 @@ Program : <none> {
         0: ExprStmt : () {
           pass: CallExpr : () {
             fn: VarExpr : fn(i32, i32) -> () {
-              var: <bar@0> : fn(i32, i32) -> ()
+              var: <bar@1> : fn(i32, i32) -> ()
             }
             args: [
               0: TypeConvertExpr : i32 {
@@ -22,17 +22,17 @@ Program : <none> {
           }
         }
         1: LetStmt : <none> {
-          var: VarDef <x@1> : <error>
+          var: VarDef <x@2> : <error>
           mutable: false
           init: <ERROR>
         }
       ]
     }
     1: FnDef : <none> {
-      name: <bar@0> : fn(i32, i32) -> ()
+      name: <bar@1> : fn(i32, i32) -> ()
       params: [
-        0: VarDef <a@2> : i32
-        1: VarDef <b@2> : i32
+        0: VarDef <a@3> : i32
+        1: VarDef <b@3> : i32
       ]
       return: ()
       given: []

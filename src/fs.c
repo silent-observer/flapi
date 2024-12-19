@@ -55,8 +55,8 @@ b32 writeTextFile(const char *path, csview s) {
 }
 
 #ifdef __unix__
-FilenameVec readDir(const char *path) {
-    FilenameVec files = {0};
+StrVec readDir(const char *path) {
+    StrVec files = {0};
     DIR *dir = opendir(path);
     if (dir == NULL)
         return files;
@@ -64,7 +64,7 @@ FilenameVec readDir(const char *path) {
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if ((entry->d_type == DT_REG || entry->d_type == DT_LNK) && entry->d_name[0] != '.')
-            FilenameVec_push(&files, cstr_from(entry->d_name));
+            StrVec_push(&files, cstr_from(entry->d_name));
     }
     closedir(dir);
     return files;
@@ -81,4 +81,19 @@ cstr replaceFilenameExt(const char *path, const char *with) {
         csview start = csview_from_n(path, dot - path);
         return cstr_from_fmt("%.*s.%s", c_SV(start), with);
     }
+}
+
+StrVec readTextFileLines(const char *path) {
+    FILE *f = fopen(path, "rb");
+    if (f == NULL)
+        return StrVec_init();
+
+    StrVec lines = {0};
+    cstr s;
+    while (cstr_getline(&s, f)) {
+        StrVec_push(&lines, s);
+    }
+
+    fclose(f);
+    return lines;
 }

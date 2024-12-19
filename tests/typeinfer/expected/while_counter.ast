@@ -1,15 +1,15 @@
 Program : <none> {
   fns: [
     0: FnDef : <none> {
-      name: <f@0> : fn(i32) -> i32
+      name: <f@1> : fn(i32) -> i32
       params: [
-        0: VarDef <x@1> : i32
+        0: VarDef <x@2> : i32
       ]
       return: i32
       given: []
       body: [
         0: LetStmt : <none> {
-          var: VarDef <i@1> : i64
+          var: VarDef <i@2> : i64
           mutable: true
           init: TypeConvertExpr : i64 {
             expr: IntLiteralExpr(0) : <intlit>
@@ -19,11 +19,11 @@ Program : <none> {
           cond: BinaryExpr : bool {
             op: "<="
             lhs: VarExpr : i64 {
-              var: <i@1> : i64
+              var: <i@2> : i64
             }
             rhs: TypeConvertExpr : i64 {
               expr: VarExpr : i32 {
-                var: <x@1> : i32
+                var: <x@2> : i32
               }
             }
           }
@@ -31,12 +31,12 @@ Program : <none> {
             0: ExprStmt : <none> {
               expr: AssignExpr : <none> {
                 lhs: VarExpr : i64 {
-                  var: <i@1> : i64
+                  var: <i@2> : i64
                 }
                 rhs: BinaryExpr : i64 {
                   op: "+"
                   lhs: VarExpr : i64 {
-                    var: <i@1> : i64
+                    var: <i@2> : i64
                   }
                   rhs: TypeConvertExpr : i64 {
                     expr: IntLiteralExpr(1) : <intlit>
@@ -48,7 +48,7 @@ Program : <none> {
         }
         2: ReturnStmt : <none> {
           expr: VarExpr : i32 {
-            var: <i@1> : i64
+            var: <i@2> : i64
           }
         }
       ]

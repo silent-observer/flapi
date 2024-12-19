@@ -1,31 +1,9 @@
 Program : <none> {
   fns: [
     0: FnDef : <none> {
-      name: <foo@0> : fn(i32, <unknown>) -> ()
+      name: <foo@1> : fn(i32, <unknown>) -> ()
       params: [
-        0: VarDef <a@1> : i32
-        1: VarDef <b@1>
-      ]
-      return: ()
-      given: []
-      body: [
-        0: ReturnStmt : <none> {
-          expr: BinaryExpr : <error> {
-            op: "+"
-            lhs: VarExpr : i32 {
-              var: <a@1> : i32
-            }
-            rhs: VarExpr : <unknown> {
-              var: <b@1> : <unknown>
-            }
-          }
-        }
-      ]
-    }
-    1: FnDef : <none> {
-      name: <bar@0> : fn(<unknown>, <unknown>) -> ()
-      params: [
-        0: VarDef <a@2>
+        0: VarDef <a@2> : i32
         1: VarDef <b@2>
       ]
       return: ()
@@ -34,8 +12,8 @@ Program : <none> {
         0: ReturnStmt : <none> {
           expr: BinaryExpr : <error> {
             op: "+"
-            lhs: VarExpr : <unknown> {
-              var: <a@2> : <unknown>
+            lhs: VarExpr : i32 {
+              var: <a@2> : i32
             }
             rhs: VarExpr : <unknown> {
               var: <b@2> : <unknown>
@@ -44,11 +22,33 @@ Program : <none> {
         }
       ]
     }
-    2: FnDef : <none> {
-      name: <baz@0> : fn(<unknown>, i32) -> ()
+    1: FnDef : <none> {
+      name: <bar@1> : fn(<unknown>, <unknown>) -> ()
       params: [
         0: VarDef <a@3>
-        1: VarDef <b@3> : i32
+        1: VarDef <b@3>
+      ]
+      return: ()
+      given: []
+      body: [
+        0: ReturnStmt : <none> {
+          expr: BinaryExpr : <error> {
+            op: "+"
+            lhs: VarExpr : <unknown> {
+              var: <a@3> : <unknown>
+            }
+            rhs: VarExpr : <unknown> {
+              var: <b@3> : <unknown>
+            }
+          }
+        }
+      ]
+    }
+    2: FnDef : <none> {
+      name: <baz@1> : fn(<unknown>, i32) -> ()
+      params: [
+        0: VarDef <a@4>
+        1: VarDef <b@4> : i32
       ]
       return: ()
       given: []
@@ -60,7 +60,7 @@ Program : <none> {
     6: <ERROR>
     7: <ERROR>
     8: FnDef : <none> {
-      name: <main@0> : fn() -> ()
+      name: <main@1> : fn() -> ()
       params: []
       return: ()
       given: []
@@ -68,7 +68,7 @@ Program : <none> {
         0: ExprStmt : <none> {
           expr: CallExpr : () {
             fn: VarExpr : fn(i32, <unknown>) -> () {
-              var: <foo@0> : fn(i32, <unknown>) -> ()
+              var: <foo@1> : fn(i32, <unknown>) -> ()
             }
             args: [
               0: TypeConvertExpr : i32 {
@@ -81,7 +81,7 @@ Program : <none> {
         1: ExprStmt : <none> {
           expr: CallExpr : () {
             fn: VarExpr : fn(<unknown>, <unknown>) -> () {
-              var: <bar@0> : fn(<unknown>, <unknown>) -> ()
+              var: <bar@1> : fn(<unknown>, <unknown>) -> ()
             }
             args: [
               0: IntLiteralExpr(3) : <unknown>
@@ -91,7 +91,7 @@ Program : <none> {
         }
         2: ExprStmt : <none> {
           expr: CallExprConst : () {
-            name: <baz@0> : fn(<unknown>, i32) -> ()
+            name: <baz@1> : fn(<unknown>, i32) -> ()
             args: [
               0: IntLiteralExpr(5) : <unknown>
               1: TypeConvertExpr : i32 {
@@ -101,7 +101,7 @@ Program : <none> {
           }
         }
         3: LetStmt : <none> {
-          var: VarDef <x@4> : i64
+          var: VarDef <x@5> : i64
           mutable: false
           init: TypeConvertExpr : i64 {
             expr: IfExpr : <intlit> {
