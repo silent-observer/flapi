@@ -7,6 +7,7 @@ TypingErrorVec typeinfer(Ast *ast) {
         .ast = ast,
         .symbols = &ast->symbols,
         .types = &ast->types,
+        .customTypes = &ast->customTypes,
         .functionReturnType = Type_simple(TYPE_NONE),
         .errors = {0},
         .breakStack = {0},

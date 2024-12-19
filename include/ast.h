@@ -3,6 +3,7 @@
 
 #include "memcxt.h"
 
+#include "customtype.h"
 #include "sourcespan.h"
 #include "symbols.h"
 #include "typeid.h"
@@ -258,7 +259,7 @@ typedef struct {
 } TypeDefParamNode;
 
 typedef struct {
-    SymbolId name;
+    TypeId baseType;
     AstChildren typeParams;
     AstNode *def;
 } TypeDefNode;
@@ -323,6 +324,7 @@ typedef struct {
     AstNode *root;
     SymbolTable symbols;
     TypeMap types;
+    CustomTypeTable customTypes;
 } Ast;
 
 cstr printAst(const Ast *ast, b32 printTypes);

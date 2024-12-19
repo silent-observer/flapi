@@ -11,6 +11,7 @@ typedef struct {
     TypeMap types;
     AstTransformErrorVec errors;
     ScopeStack scopes;
+    CustomTypeTable customTypes;
 } AstTransformer;
 
 static SourceSpan getSpan(CstChild *c) {
@@ -1331,9 +1332,9 @@ static void transformTypeDefName(AstTransformer *astTrans, CstNode *cst, AstNode
     assert(CstChildren_size(&cst->children) == 2);
 
     if (is_token(at(0), TOKEN_IDENT))
-        typeDef->typeDef.name = makeSymbol(astTrans, token_at(0));
+        typeDef->typeDef.baseType = Type_named(&astTrans->types, TYPE_NAMED, token_at(0)->text);
     else
-        typeDef->typeDef.name = NO_SYMBOL_ID;
+        typeDef->typeDef.baseType = Type_simple(TYPE_ERROR);
 
     if (node_at(1)) {
         assert(is_node(at(1), CST_TYPE_DEF_PARAM_LIST));
@@ -1528,6 +1529,7 @@ AstTransformResult astFromCst(Cst *cst) {
         .errors = AstTransformErrorVec_init(),
         .scopes = ScopeStack_init(),
         .types = TypeTable_init(),
+        .customTypes = {0},
     };
 
     ScopeStack_push(&astTrans.scopes, 0);
@@ -1540,5 +1542,6 @@ AstTransformResult astFromCst(Cst *cst) {
     ast.root = program;
     ast.symbols = astTrans.symbols;
     ast.types = astTrans.types;
+    ast.customTypes = astTrans.customTypes;
     return (AstTransformResult){.ast = ast, .errors = astTrans.errors};
 }

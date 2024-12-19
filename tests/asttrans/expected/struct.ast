@@ -1,7 +1,7 @@
 Program {
   fns: [
     0: TypeDef {
-      name: <MyStruct@1>
+      type: MyStruct
       def: StructDef {
         fields: [
           0: VarDef <x@0> : i32

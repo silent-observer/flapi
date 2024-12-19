@@ -10,6 +10,7 @@ typedef struct {
     Ast *ast;
     SymbolTable *symbols;
     TypeMap *types;
+    CustomTypeTable *customTypes;
     TypeId functionReturnType;
     TypingErrorVec errors;
     TypeVec breakStack;

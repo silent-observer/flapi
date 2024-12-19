@@ -433,7 +433,7 @@ static void printTypeDefParam(AstPrinter *p, const AstNode *n) {
 static void printTypeDef(AstPrinter *p, const AstNode *n) {
     assert(n->kind == AST_TYPE_DEF);
     START("TypeDef");
-    SYMBOL("name", n->typeDef.name);
+    TYPE("type", n->typeDef.baseType);
     if (AstChildren_size(&n->typeDef.typeParams) > 0)
         MANY("params", n->typeDef.typeParams);
     ONE("def", n->typeDef.def);

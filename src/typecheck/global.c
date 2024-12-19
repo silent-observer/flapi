@@ -57,3 +57,49 @@ void typecheckFnDef(TypeInferContext *ctx, AstNode *node) {
     ctx->functionReturnType = Type_simple(TYPE_NONE);
     node->type = Type_simple(TYPE_NONE);
 }
+
+static void typecollectStructDef(TypeInferContext *ctx, AstNode *node, CustomTypeEntry *entry) {
+    assert(node->kind == AST_STRUCT_DEF);
+    c_foreach(it, VarDefVec, node->structDef.fields) {
+        CustomTypeElement elem = {
+            .name = it.ref->symbol,
+            .type = it.ref->type,
+        };
+        CustomTypeElementVec_push(&entry->elements, elem);
+    }
+}
+static void typecollectAnyOfDef(TypeInferContext *ctx, AstNode *node, CustomTypeEntry *entry) {
+    assert(node->kind == AST_ANYOF_DEF);
+    c_foreach(it, VarDefVec, node->anyOfDef.variants) {
+        CustomTypeElement elem = {
+            .name = it.ref->symbol,
+            .type = it.ref->type,
+        };
+        CustomTypeElementVec_push(&entry->elements, elem);
+    }
+}
+void typecollectTypeDef(TypeInferContext *ctx, AstNode *node) {
+    assert(node->kind == AST_TYPE_DEF);
+    CustomTypeEntry entry;
+    entry.baseType = node->typeDef.baseType;
+    c_foreach(it, AstChildren, node->typeDef.typeParams) {
+        assert((*it.ref)->kind == AST_TYPE_DEF_PARAM);
+        TypeId param = (*it.ref)->typeDefParam.param;
+        Type *t = Type_lookup(ctx->types, param);
+        assert(t->kind == TYPE_GENERIC_PARAM);
+        TypeChildren_push(&entry.typeParams, param);
+    }
+
+    switch (node->typeDef.def->kind) {
+        case AST_STRUCT_DEF:
+            typecollectStructDef(ctx, node->typeDef.def, &entry);
+            break;
+        case AST_ANYOF_DEF:
+            typecollectAnyOfDef(ctx, node->typeDef.def, &entry);
+            break;
+        default:
+            assert(0);
+    }
+
+    CustomTypeTable_add(ctx->customTypes, ctx->types, &entry);
+}
