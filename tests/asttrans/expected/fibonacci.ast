@@ -3,7 +3,10 @@ Program {
     0: FnDef {
       name: <fib@1>
       params: [
-        0: VarDef <x@2> : i32
+        0: FnParam {
+          name: <x@2>
+          type: i32
+        }
       ]
       return: i32
       given: []

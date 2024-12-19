@@ -13,6 +13,7 @@
     XX(AST_ERROR, "Error")                       \
     XX(AST_PROGRAM, "Program")                   \
     XX(AST_FN_DEF, "FnDef")                      \
+    XX(AST_FN_PARAM, "FnParam")                  \
                                                  \
     XX(AST_EXPR_STMT, "ExprStmt")                \
     XX(AST_LET_STMT, "LetStmt")                  \
@@ -84,11 +85,17 @@ typedef struct {
 
 typedef struct {
     SymbolId symbol;
-    VarDefVec params;
+    AstChildren params;
     TypeId returnType;
     VarDefVec given;
     AstChildren body;
 } FnDefNode;
+
+typedef struct {
+    SymbolId symbol;
+    TypeId type;
+    b8 isMutable;
+} FnParamNode;
 
 typedef struct {
     AstNode *expr;
@@ -278,11 +285,14 @@ typedef struct {
 
 struct AstNode {
     AstNodeKind kind;
+    b8 isMutable;
+    b8 isPlace;
     SourceSpan span;
     TypeId type;
     union {
         ProgramNode program;
         FnDefNode fnDef;
+        FnParamNode fnParam;
         ExprStmtNode exprStmt;
         LetStmtNode letStmt;
         WithStmtNode withStmt;

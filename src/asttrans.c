@@ -339,40 +339,46 @@ static TypeId transformTypeExpr(AstTransformer *astTrans, CstNode *cst) {
     }
 }
 
+#define DEF_NODE(n, k)                         \
+    AstNode *n = AstPool_new(&astTrans->pool); \
+    n->kind = (k);                             \
+    n->span = cst->span
+
 // FnParam(5) = 'IDENT'[0!] ':'[1] 'var'?[2] TypeExpr[3!E] ','?[4]
 // TODO: 'var' is ignored
-static VarDef transformFnParam(AstTransformer *astTrans, CstNode *cst) {
+static AstNode *transformFnParam(AstTransformer *astTrans, CstNode *cst) {
     assert(cst);
     assert(cst->kind == CST_FN_PARAM);
     assert(CstChildren_size(&cst->children) == 5);
 
-    VarDef v;
-    v.span = cst->span;
+    DEF_NODE(n, AST_FN_PARAM);
 
     assert(is_token(at(0), TOKEN_IDENT));
-    v.symbol = makeSymbol(astTrans, token_at(0));
+    n->fnParam.symbol = makeSymbol(astTrans, token_at(0));
 
     if (is_token(at(1), TOKEN_COLON)) {
         assert(at(3)->kind == CST_CHILD_NODE);
-        v.type = transformTypeExpr(astTrans, node_at(3));
+        n->fnParam.type = transformTypeExpr(astTrans, node_at(3));
     } else {
         err("function parameters must be declared with explicit types", at(0));
-        v.type = Type_simple(TYPE_UNKNOWN);
+        n->fnParam.type = Type_simple(TYPE_UNKNOWN);
     }
 
-    return v;
+    n->fnParam.isMutable = is_token(at(2), TOKEN_K_VAR);
+
+    return n;
 }
 
 // FnParamList(*) = '('[0!] FnParam*[*!E] ')'[?]
-static void transformFnParamList(AstTransformer *astTrans, CstNode *cst, VarDefVec *params) {
+static void transformFnParamList(AstTransformer *astTrans, CstNode *cst, AstChildren *params) {
     assert(cst);
     assert(cst->kind == CST_FN_PARAM_LIST);
     c_foreach(it, CstChildren, cst->children) {
         if (it.ref->kind != CST_CHILD_NODE || is_node(it.ref, CST_ERROR))
             continue;
         assert(is_node(it.ref, CST_FN_PARAM));
-        VarDef param = transformFnParam(astTrans, it.ref->node);
-        VarDefVec_push(params, param);
+        AstNode *param = transformFnParam(astTrans, it.ref->node);
+        AstChildren_push(params, param);
     }
 }
 
@@ -419,11 +425,6 @@ static void transformFnModifierList(AstTransformer *astTrans, CstNode *cst, VarD
         transformGivenModifier(astTrans, it.ref->node, given);
     }
 }
-
-#define DEF_NODE(n, k)                         \
-    AstNode *n = AstPool_new(&astTrans->pool); \
-    n->kind = (k);                             \
-    n->span = cst->span
 
 static AstNode *transformExpr(AstTransformer *astTrans, CstNode *cst);
 
@@ -1038,11 +1039,11 @@ static AstNode *transformWithStmt(AstTransformer *astTrans, CstNode *cst) {
 
     assert(is_token(at(0), TOKEN_K_WITH));
     assert(is_node(at(1), CST_VAR_DEF));
-    n->letStmt.varDef = transformVarDef(astTrans, node_at(1));
+    n->withStmt.varDef = transformVarDef(astTrans, node_at(1));
 
-    n->letStmt.initExpr = node_at(3)
-                              ? transformExpr(astTrans, node_at(3))
-                              : make_err("expected an expression", at(3));
+    n->withStmt.initExpr = node_at(3)
+                               ? transformExpr(astTrans, node_at(3))
+                               : make_err("expected an expression", at(3));
 
     return n;
 }

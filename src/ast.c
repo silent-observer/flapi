@@ -143,11 +143,22 @@ static void printProgram(AstPrinter *p, const AstNode *n) {
     END();
 }
 
+static void printFnParam(AstPrinter *p, const AstNode *n) {
+    assert(n->kind == AST_FN_PARAM);
+    if (n->fnParam.isMutable)
+        START("FnParamVar");
+    else
+        START("FnParam");
+    SYMBOL("name", n->fnParam.symbol);
+    TYPE("type", n->fnParam.type);
+    END();
+}
+
 static void printFnDef(AstPrinter *p, const AstNode *n) {
     assert(n->kind == AST_FN_DEF);
     START("FnDef");
     SYMBOL("name", n->fnDef.symbol);
-    MANY_VARDEF("params", n->fnDef.params);
+    MANY("params", n->fnDef.params);
     TYPE("return", n->fnDef.returnType);
     MANY_VARDEF("given", n->fnDef.given);
     MANY("body", n->fnDef.body);
@@ -471,6 +482,9 @@ static void printNode(AstPrinter *p, const AstNode *n) {
             break;
         case AST_FN_DEF:
             printFnDef(p, n);
+            break;
+        case AST_FN_PARAM:
+            printFnParam(p, n);
             break;
         case AST_EXPR_STMT:
             printExprStmt(p, n);

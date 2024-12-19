@@ -3,8 +3,14 @@ Program {
     0: FnDef {
       name: <foo@1>
       params: [
-        0: VarDef <a@2> : i32
-        1: VarDef <b@2>
+        0: FnParam {
+          name: <a@2>
+          type: i32
+        }
+        1: FnParam {
+          name: <b@2>
+          type: <unknown>
+        }
       ]
       return: ()
       given: []
@@ -25,8 +31,14 @@ Program {
     1: FnDef {
       name: <bar@1>
       params: [
-        0: VarDef <a@3>
-        1: VarDef <b@3>
+        0: FnParam {
+          name: <a@3>
+          type: <unknown>
+        }
+        1: FnParam {
+          name: <b@3>
+          type: <unknown>
+        }
       ]
       return: ()
       given: []
@@ -47,8 +59,14 @@ Program {
     2: FnDef {
       name: <baz@1>
       params: [
-        0: VarDef <a@4>
-        1: VarDef <b@4> : i32
+        0: FnParam {
+          name: <a@4>
+          type: <unknown>
+        }
+        1: FnParam {
+          name: <b@4>
+          type: i32
+        }
       ]
       return: ()
       given: []

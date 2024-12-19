@@ -3,8 +3,14 @@ Program : <none> {
     0: FnDef : <none> {
       name: <foo@1> : fn(i32, <unknown>) -> ()
       params: [
-        0: VarDef <a@2> : i32
-        1: VarDef <b@2>
+        0: FnParam : i32 {
+          name: <a@2> : i32
+          type: i32
+        }
+        1: FnParam : <unknown> {
+          name: <b@2> : <unknown>
+          type: <unknown>
+        }
       ]
       return: ()
       given: []
@@ -25,8 +31,14 @@ Program : <none> {
     1: FnDef : <none> {
       name: <bar@1> : fn(<unknown>, <unknown>) -> ()
       params: [
-        0: VarDef <a@3>
-        1: VarDef <b@3>
+        0: FnParam : <unknown> {
+          name: <a@3> : <unknown>
+          type: <unknown>
+        }
+        1: FnParam : <unknown> {
+          name: <b@3> : <unknown>
+          type: <unknown>
+        }
       ]
       return: ()
       given: []
@@ -47,8 +59,14 @@ Program : <none> {
     2: FnDef : <none> {
       name: <baz@1> : fn(<unknown>, i32) -> ()
       params: [
-        0: VarDef <a@4>
-        1: VarDef <b@4> : i32
+        0: FnParam : <unknown> {
+          name: <a@4> : <unknown>
+          type: <unknown>
+        }
+        1: FnParam : i32 {
+          name: <b@4> : i32
+          type: i32
+        }
       ]
       return: ()
       given: []
